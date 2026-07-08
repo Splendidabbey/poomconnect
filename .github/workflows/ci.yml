@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  php-lint:
+    name: PHP syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Lint PHP files
+        run: |
+          find . -name '*.php' \
+            -not -path './vendor/*' \
+            -print0 | xargs -0 -I{} php -l {}
+          echo "All PHP files passed syntax check."
+
+  validate-structure:
+    name: Validate project structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required paths exist
+        run: |
+          required=(
+            index.php
+            config/app.php
+            config/database.php
+            includes/functions.php
+            database.sql
+            assets/css/style.css
+          )
+          for path in "${required[@]}"; do
+            test -f "$path" || { echo "Missing: $path"; exit 1; }
+          done
+          echo "Project structure OK."

@@ -1,0 +1,14 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copy to config/database.local.php on your server (gitignored).
+ * Or set environment variables: DB_HOST, DB_NAME, DB_USER, DB_PASS
+ */
+
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'poomconnect');
+define('DB_USER', 'poomconnect_user');
+define('DB_PASS', 'change-me');
+define('DB_CHARSET', 'utf8mb4');

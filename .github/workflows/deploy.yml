@@ -1,0 +1,74 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Pre-deploy checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: PHP lint
+        run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -I{} php -l {}
+
+  deploy:
+    name: Deploy to production
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Rsync files to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_DEPLOY_PATH: ${{ secrets.VPS_DEPLOY_PATH }}
+        run: |
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.DS_Store' \
+            --exclude='config/database.local.php' \
+            --exclude='uploads/slips/*' \
+            --exclude='uploads/events/*' \
+            --exclude='uploads/logos/*' \
+            --exclude='deploy/server-setup.sh' \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new" \
+            ./ "${VPS_USER}@${VPS_HOST}:${VPS_DEPLOY_PATH}/"
+
+      - name: Post-deploy on server
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_DEPLOY_PATH: ${{ secrets.VPS_DEPLOY_PATH }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new \
+            "${VPS_USER}@${VPS_HOST}" \
+            "DEPLOY_PATH='${VPS_DEPLOY_PATH}' bash -s" < deploy/post-deploy.sh
+
+      - name: Deployment summary
+        run: |
+          echo "Deployed to ${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"

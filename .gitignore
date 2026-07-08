@@ -1,0 +1,25 @@
+# OS & IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local secrets (never commit)
+config/database.local.php
+.env
+.env.local
+
+# Uploads (keep structure, ignore user content)
+uploads/slips/*
+uploads/events/*
+uploads/logos/*
+!uploads/slips/.gitkeep
+!uploads/events/.gitkeep
+!uploads/logos/.gitkeep
+
+# Seed script should not exist on production after setup
+# (still tracked in repo for initial deploy — remove on server manually)
+
+# Logs
+*.log
