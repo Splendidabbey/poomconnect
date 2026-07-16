@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 36" fill="none">
+  <defs>
+    <linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6C35FF"/>
+      <stop offset="100%" stop-color="#FF2D8D"/>
+    </linearGradient>
+  </defs>
+  <text x="0" y="22" fill="url(#navGrad)" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="800">poom</text>
+  <text x="0" y="34" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="8" font-weight="600" letter-spacing="3.2">CONNECT</text>
+</svg>

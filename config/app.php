@@ -67,6 +67,7 @@ function brand_favicon(): string
 function brand_logo(string $size = 'md'): string
 {
     return match ($size) {
+        'nav' => brand_url('websites-logo/poom-logo-nav.svg'),
         'sm' => brand_url('websites-logo/poom-logo-200x50.png'),
         'lg' => brand_url('websites-logo/poom-logo-320x80.png'),
         default => brand_url('websites-logo/poom-logo-240x60.png'),

@@ -30,14 +30,21 @@ $currentPath = basename($_SERVER['SCRIPT_NAME'] ?? 'index.php');
     <link rel="icon" type="image/png" sizes="48x48" href="<?= brand_favicon() ?>">
     <link rel="apple-touch-icon" href="<?= brand_app_icon('512') ?>">
     <link rel="stylesheet" href="<?= asset_url('css/style.css') ?>">
+    <?php if ($isLanding): ?>
+    <link rel="stylesheet" href="<?= asset_url('css/landing.css') ?>">
+    <?php endif; ?>
 </head>
 <body class="<?= e($bodyClass) ?>">
 <?php if (!$hideNav): ?>
 <header class="navbar<?= $isLanding ? ' navbar-landing' : '' ?>">
     <div class="container navbar-inner<?= $isLanding ? ' navbar-inner-landing' : '' ?>">
         <a href="<?= base_url('index.php') ?>" class="logo">
+            <?php if ($isLanding): ?>
+            <img src="<?= brand_logo('nav') ?>" alt="Poom Connect" class="logo-image logo-nav">
+            <?php else: ?>
             <img src="<?= brand_logo('md') ?>" alt="Poom Connect" class="logo-image logo-image-md">
             <img src="<?= brand_logo('sm') ?>" alt="Poom Connect" class="logo-image logo-image-sm">
+            <?php endif; ?>
         </a>
 
         <button class="nav-toggle" aria-label="Toggle menu" data-nav-toggle>
