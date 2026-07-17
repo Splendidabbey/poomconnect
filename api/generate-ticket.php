@@ -10,13 +10,13 @@ $userId = (int) ($_POST['user_id'] ?? 0);
 $event = get_event_for_organizer($eventId);
 
 if (!$event || !$userId) {
-    json_response(['success' => false, 'message' => 'Invalid request.']);
+    json_response(['success' => false, 'message' => __('api.invalid_request')]);
 }
 
 $token = generate_ticket($eventId, $userId);
 
 if ($token) {
-    json_response(['success' => true, 'message' => 'Ticket generated.', 'qr_token' => $token]);
+    json_response(['success' => true, 'message' => __('api.ticket_generated'), 'qr_token' => $token]);
 }
 
-json_response(['success' => false, 'message' => 'Could not generate ticket.']);
+json_response(['success' => false, 'message' => __('api.ticket_failed')]);

@@ -9,7 +9,7 @@ $eventId = (int) ($_POST['event_id'] ?? 0);
 $event = get_event_for_organizer($eventId);
 
 if (!$event) {
-    json_response(['success' => false, 'message' => 'Event not found.']);
+    json_response(['success' => false, 'message' => __('api.event_not_found')]);
 }
 
 ensure_live_state($eventId, (int) $event['round_duration']);
@@ -23,4 +23,4 @@ db()->prepare("UPDATE events SET status = 'completed' WHERE id = ?")->execute([$
 
 log_admin_action((int) current_user()['id'], 'event_ended', 'Event ID: ' . $eventId);
 
-json_response(['success' => true, 'message' => 'Event ended.']);
+json_response(['success' => true, 'message' => __('api.event_ended')]);

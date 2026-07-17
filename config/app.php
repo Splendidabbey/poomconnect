@@ -16,9 +16,47 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once APP_ROOT . '/includes/i18n.php';
+init_locale();
+
+require_once APP_ROOT . '/includes/localization.php';
+init_currency();
+
 require_once APP_ROOT . '/config/database.php';
 require_once APP_ROOT . '/includes/functions.php';
+require_once APP_ROOT . '/includes/content.php';
+require_once APP_ROOT . '/includes/platform.php';
+require_once APP_ROOT . '/includes/promptpay.php';
+require_once APP_ROOT . '/includes/realtime.php';
+require_once APP_ROOT . '/includes/roles.php';
+require_once APP_ROOT . '/includes/tenant.php';
+require_once APP_ROOT . '/includes/subscriptions.php';
+require_once APP_ROOT . '/includes/safety.php';
+require_once APP_ROOT . '/includes/community.php';
+require_once APP_ROOT . '/includes/marketplace.php';
+require_once APP_ROOT . '/includes/templates.php';
+require_once APP_ROOT . '/includes/ai_policy.php';
+require_once APP_ROOT . '/includes/admin-platform.php';
+require_once APP_ROOT . '/includes/marketing.php';
+require_once APP_ROOT . '/includes/social-share.php';
 require_once APP_ROOT . '/includes/auth.php';
+
+ensure_content_schema();
+ensure_platform_schema();
+ensure_realtime_schema();
+ensure_roles_schema();
+ensure_tenant_schema();
+ensure_subscription_schema();
+ensure_safety_schema();
+ensure_community_schema();
+ensure_marketplace_schema();
+ensure_templates_schema();
+ensure_ai_policy_schema();
+ensure_admin_platform_schema();
+ensure_localization_schema();
+ensure_marketing_schema();
+
+resolve_tenant_from_request();
 
 function base_url(string $path = ''): string
 {

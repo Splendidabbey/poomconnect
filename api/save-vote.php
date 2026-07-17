@@ -11,8 +11,8 @@ $targetId = (int) ($_POST['target_id'] ?? 0);
 $vote = trim($_POST['vote'] ?? '');
 
 if (!$eventId || !$roundId || !$voterId || !$targetId) {
-    json_response(['success' => false, 'message' => 'Invalid vote data.']);
+    json_response(['success' => false, 'message' => __('api.invalid_vote')]);
 }
 
 process_match_votes($eventId, $roundId, $voterId, $targetId, $vote);
-json_response(['success' => true, 'message' => 'Vote saved.']);
+json_response(['success' => true, 'message' => __('api.vote_saved')]);

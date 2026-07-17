@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/config/app.php';
 
-$pageTitle = 'Home';
+$pageTitle = __('common.home');
 $bodyClass = 'page-landing';
 $upcomingEvents = get_published_events(3);
 
@@ -52,18 +52,18 @@ echo render_flash();
         <div class="hero-content">
             <div class="hero-badge">
                 <svg class="hero-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8 19 13M17.8 6.2 19 5M3 21l9-9M12.2 6.2 11 5"/></svg>
-                AI-POWERED REAL-TIME MATCHING
+                <?php _e('landing.hero_badge'); ?>
             </div>
-            <h1>Meet. Connect.<br><span class="gradient-text">Belong.</span></h1>
-            <p class="hero-subtitle">Live events. Real conversations. Meaningful connections.</p>
+            <h1><?php _e('landing.hero_title_1'); ?><br><span class="gradient-text"><?php _e('landing.hero_title_2'); ?></span></h1>
+            <p class="hero-subtitle"><?php _e('landing.hero_subtitle'); ?></p>
             <div class="hero-actions">
                 <a href="<?= base_url('events.php') ?>" class="btn btn-primary btn-lg">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    Join an Event
+                    <?php _e('landing.join_event'); ?>
                 </a>
                 <a href="<?= base_url('organizer/create-event.php') ?>" class="btn btn-hero-outline btn-lg">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    Host Your Event
+                    <?php _e('landing.host_event'); ?>
                 </a>
             </div>
             <div class="hero-features">
@@ -71,25 +71,25 @@ echo render_flash();
                     <span class="hero-feature-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="17" cy="7" r="2.5"/><path d="M21 21v-2a3.5 3.5 0 0 0-2.5-3.36"/></svg>
                     </span>
-                    AI Matching
+                    <?php _e('landing.ai_matching'); ?>
                 </div>
                 <div class="hero-feature">
                     <span class="hero-feature-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="2"/></svg>
                     </span>
-                    Real-time Rounds
+                    <?php _e('landing.realtime_rounds'); ?>
                 </div>
                 <div class="hero-feature">
                     <span class="hero-feature-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"/><rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"/><rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="14" width="2" height="2" fill="currentColor" stroke="none"/><rect x="18" y="14" width="3" height="3" fill="currentColor" stroke="none"/><rect x="14" y="18" width="2" height="3" fill="currentColor" stroke="none"/></svg>
                     </span>
-                    QR Ticketing
+                    <?php _e('landing.qr_ticketing'); ?>
                 </div>
                 <div class="hero-feature">
                     <span class="hero-feature-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
                     </span>
-                    Safe & Inclusive
+                    <?php _e('landing.safe_inclusive'); ?>
                 </div>
             </div>
         </div>
@@ -103,9 +103,9 @@ echo render_flash();
                     </div>
                     <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80" alt="" class="match-avatar">
                 </div>
-                <h4>It's a match! 🎉</h4>
-                <p>You both liked each other</p>
-                <button type="button" class="btn btn-primary btn-sm btn-match">Start Chat</button>
+                <h4><?php _e('landing.match_title'); ?></h4>
+                <p><?php _e('landing.match_subtitle'); ?></p>
+                <button type="button" class="btn btn-primary btn-sm btn-match"><?php _e('landing.start_chat'); ?></button>
             </div>
         </div>
     </div>
@@ -121,7 +121,7 @@ echo render_flash();
                     </div>
                     <div class="stat-body">
                         <h3>10K+</h3>
-                        <p>Happy Participants</p>
+                        <p><?php _e('landing.stat_participants'); ?></p>
                     </div>
                 </div>
                 <div class="stat-item">
@@ -130,7 +130,7 @@ echo render_flash();
                     </div>
                     <div class="stat-body">
                         <h3>500+</h3>
-                        <p>Events Hosted</p>
+                        <p><?php _e('landing.stat_events'); ?></p>
                     </div>
                 </div>
                 <div class="stat-item">
@@ -139,7 +139,7 @@ echo render_flash();
                     </div>
                     <div class="stat-body">
                         <h3>25K+</h3>
-                        <p>Matches Made</p>
+                        <p><?php _e('landing.stat_matches'); ?></p>
                     </div>
                 </div>
                 <div class="stat-item">
@@ -148,7 +148,7 @@ echo render_flash();
                     </div>
                     <div class="stat-body">
                         <h3>98%</h3>
-                        <p>Would Join Again</p>
+                        <p><?php _e('landing.stat_join_again'); ?></p>
                     </div>
                 </div>
             </div>
@@ -157,8 +157,8 @@ echo render_flash();
         <div class="landing-split-grid" id="how-it-works">
             <div class="landing-split-left">
                 <div class="section-intro">
-                    <h2>How It Works</h2>
-                    <p>3 simple steps to meaningful connections</p>
+                    <h2><?php _e('landing.how_it_works'); ?></h2>
+                    <p><?php _e('landing.how_it_works_sub'); ?></p>
                 </div>
                 <div class="steps-horizontal">
                     <div class="step-card-h">
@@ -166,8 +166,8 @@ echo render_flash();
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                         </div>
                         <span class="step-number">1</span>
-                        <h3>Join an Event</h3>
-                        <p>Choose an event that interests you and get your ticket.</p>
+                        <h3><?php _e('landing.step1_title'); ?></h3>
+                        <p><?php _e('landing.step1_desc'); ?></p>
                     </div>
                     <div class="step-connector-h" aria-hidden="true"></div>
                     <div class="step-card-h">
@@ -175,8 +175,8 @@ echo render_flash();
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         </div>
                         <span class="step-number">2</span>
-                        <h3>Meet in Real-time</h3>
-                        <p>Have short, fun conversations in structured rounds.</p>
+                        <h3><?php _e('landing.step2_title'); ?></h3>
+                        <p><?php _e('landing.step2_desc'); ?></p>
                     </div>
                     <div class="step-connector-h" aria-hidden="true"></div>
                     <div class="step-card-h">
@@ -184,16 +184,16 @@ echo render_flash();
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                         </div>
                         <span class="step-number">3</span>
-                        <h3>Match Instantly</h3>
-                        <p>If there's a mutual like, it's a match! Start connecting.</p>
+                        <h3><?php _e('landing.step3_title'); ?></h3>
+                        <p><?php _e('landing.step3_desc'); ?></p>
                     </div>
                 </div>
             </div>
 
             <div class="events-panel">
                 <div class="events-panel-header">
-                    <h3>Upcoming Events</h3>
-                    <a href="<?= base_url('events.php') ?>" class="events-panel-link">View all</a>
+                    <h3><?php _e('landing.upcoming_events'); ?></h3>
+                    <a href="<?= base_url('events.php') ?>" class="events-panel-link"><?php _e('landing.view_all'); ?></a>
                 </div>
                 <div class="events-panel-list">
                     <?php if ($upcomingEvents): ?>
@@ -203,14 +203,14 @@ echo render_flash();
                             $spots = get_spots_left($event);
                             $badgeClass = $spots <= 15 ? 'badge-pink' : 'badge-success';
                             ?>
-                            <a href="<?= base_url('event.php?id=' . (int) $event['id']) ?>" class="events-panel-item">
+                            <a href="<?= e(event_url($event)) ?>" class="events-panel-item">
                                 <img src="<?= e($cover) ?>" alt="" class="events-panel-thumb">
                                 <div class="events-panel-info">
                                     <h4><?= e($event['title']) ?></h4>
                                     <p><?= e(format_date($event['event_date'])) ?> · <?= e(format_time($event['start_time'])) ?></p>
-                                    <p><?= e($event['location'] ?? 'TBA') ?></p>
+                                    <p><?= e($event['location'] ?? __('common.tba')) ?></p>
                                 </div>
-                                <span class="badge <?= $badgeClass ?>"><?= $spots ?> spots left</span>
+                                <span class="badge <?= $badgeClass ?>"><?= e(spots_left_label($spots)) ?></span>
                             </a>
                         <?php endforeach; ?>
                     <?php else: ?>
@@ -222,7 +222,7 @@ echo render_flash();
                                     <p><?= e(format_date($event['event_date'])) ?> · <?= e(format_time($event['start_time'])) ?></p>
                                     <p><?= e($event['location']) ?></p>
                                 </div>
-                                <span class="badge badge-<?= e($event['badge']) ?>"><?= (int) $event['spots'] ?> spots left</span>
+                                <span class="badge badge-<?= e($event['badge']) ?>"><?= e(spots_left_label((int) $event['spots'])) ?></span>
                             </a>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -235,12 +235,12 @@ echo render_flash();
 <section class="section section-organizer" id="organizers">
     <div class="container organizer-section">
         <div class="organizer-copy">
-            <span class="section-label section-label-purple">For Organizers</span>
-            <h2>Run events people <span class="gradient-text">love</span></h2>
-            <p>Everything you need to create, manage, and grow unforgettable events.</p>
+            <span class="section-label section-label-purple"><?php _e('landing.for_organizers'); ?></span>
+            <h2><?php _e('landing.organizer_title'); ?> <span class="gradient-text"><?php _e('landing.organizer_title_highlight'); ?></span></h2>
+            <p><?php _e('landing.organizer_desc'); ?></p>
             <div class="organizer-actions">
-                <a href="<?= base_url('login.php') ?>" class="btn btn-primary btn-lg">Start Hosting</a>
-                <a href="<?= base_url('index.php#pricing') ?>" class="organizer-learn-more">Learn More →</a>
+                <a href="<?= base_url('login.php') ?>" class="btn btn-primary btn-lg"><?php _e('landing.start_hosting'); ?></a>
+                <a href="<?= base_url('index.php#pricing') ?>" class="organizer-learn-more"><?php _e('landing.learn_more'); ?></a>
             </div>
         </div>
 
@@ -248,45 +248,45 @@ echo render_flash();
             <div class="dashboard-mockup-layout">
                 <aside class="dashboard-mockup-sidebar">
                     <div class="dashboard-mockup-logo">
-                        <img src="<?= brand_logo('nav') ?>" alt="Poom Connect">
+                        <img src="<?= brand_logo('nav') ?>" alt="<?= e(__('app.name')) ?>">
                     </div>
                     <nav>
-                        <span class="active">📊 Overview</span>
-                        <span>📅 Events</span>
-                        <span>👥 Participants</span>
-                        <span>✅ Check-ins</span>
-                        <span>💜 Matches</span>
-                        <span>📈 Analytics</span>
-                        <span>⚙️ Settings</span>
+                        <span class="active">📊 <?php _e('landing.mockup_overview'); ?></span>
+                        <span>📅 <?php _e('landing.mockup_events'); ?></span>
+                        <span>👥 <?php _e('landing.mockup_participants'); ?></span>
+                        <span>✅ <?php _e('landing.mockup_checkins'); ?></span>
+                        <span>💜 <?php _e('landing.mockup_matches'); ?></span>
+                        <span>📈 <?php _e('landing.mockup_analytics'); ?></span>
+                        <span>⚙️ <?php _e('landing.mockup_settings'); ?></span>
                     </nav>
                 </aside>
                 <div class="dashboard-mockup-main">
-                    <h3 class="mockup-dashboard-title">Dashboard</h3>
+                    <h3 class="mockup-dashboard-title"><?php _e('landing.mockup_dashboard'); ?></h3>
                     <div class="mockup-stats-row mockup-stats-row-4">
                         <div class="mockup-stat-card">
-                            <span class="mockup-stat-label">Total Events</span>
+                            <span class="mockup-stat-label"><?php _e('landing.mockup_total_events'); ?></span>
                             <strong>23</strong>
                             <span class="mockup-stat-change">+15%</span>
                         </div>
                         <div class="mockup-stat-card">
-                            <span class="mockup-stat-label">Total Participants</span>
+                            <span class="mockup-stat-label"><?php _e('landing.mockup_total_participants'); ?></span>
                             <strong>1,248</strong>
                             <span class="mockup-stat-change">+22%</span>
                         </div>
                         <div class="mockup-stat-card">
-                            <span class="mockup-stat-label">Matches Made</span>
+                            <span class="mockup-stat-label"><?php _e('landing.mockup_matches_made'); ?></span>
                             <strong>532</strong>
                             <span class="mockup-stat-change">+18%</span>
                         </div>
                         <div class="mockup-stat-card">
-                            <span class="mockup-stat-label">Revenue</span>
+                            <span class="mockup-stat-label"><?php _e('landing.mockup_revenue'); ?></span>
                             <strong>฿248,000</strong>
                             <span class="mockup-stat-change">+12%</span>
                         </div>
                     </div>
                     <div class="mockup-charts-row">
                         <div class="mockup-chart-card mockup-chart-wide">
-                            <h4>Participants Over Time</h4>
+                            <h4><?php _e('landing.mockup_participants_over_time'); ?></h4>
                             <div class="mockup-line-chart">
                                 <svg viewBox="0 0 400 100" preserveAspectRatio="none">
                                     <defs>
@@ -305,7 +305,7 @@ echo render_flash();
                             </div>
                         </div>
                         <div class="mockup-chart-card mockup-chart-donut">
-                            <h4>Gender Balance</h4>
+                            <h4><?php _e('landing.mockup_gender_balance'); ?></h4>
                             <div class="mockup-donut">
                                 <div class="mockup-donut-ring"></div>
                                 <div class="mockup-donut-center">52%<small>F</small></div>
@@ -321,45 +321,45 @@ echo render_flash();
 <section class="section section-dark" id="pricing">
     <div class="container">
         <div class="section-header">
-            <span class="section-label">Pricing</span>
-            <h2>Simple, transparent pricing</h2>
-            <p>Start free and scale as your events grow.</p>
+            <span class="section-label"><?php _e('landing.pricing_label'); ?></span>
+            <h2><?php _e('landing.pricing_title'); ?></h2>
+            <p><?php _e('landing.pricing_subtitle'); ?></p>
         </div>
         <div class="pricing-grid">
             <div class="pricing-card card">
-                <h3>Starter</h3>
-                <div class="pricing-price">Free</div>
+                <h3><?php _e('landing.starter'); ?></h3>
+                <div class="pricing-price"><?php _e('landing.free'); ?></div>
                 <ul class="pricing-features">
-                    <li>Up to 3 events/month</li>
-                    <li>50 participants per event</li>
-                    <li>QR ticketing</li>
-                    <li>PromptPay payments</li>
+                    <li><?php _e('landing.starter_f1'); ?></li>
+                    <li><?php _e('landing.starter_f2'); ?></li>
+                    <li><?php _e('landing.starter_f3'); ?></li>
+                    <li><?php _e('landing.starter_f4'); ?></li>
                 </ul>
-                <a href="<?= base_url('login.php') ?>" class="btn btn-outline btn-block">Get Started</a>
+                <a href="<?= base_url('login.php') ?>" class="btn btn-outline btn-block"><?php _e('landing.get_started'); ?></a>
             </div>
             <div class="pricing-card card featured">
-                <span class="badge badge-purple">Popular</span>
-                <h3>Pro</h3>
-                <div class="pricing-price">1,990 <span>THB/mo</span></div>
+                <span class="badge badge-purple"><?php _e('landing.popular'); ?></span>
+                <h3><?php _e('landing.pro'); ?></h3>
+                <div class="pricing-price">1,990 <span><?php _e('landing.thb_mo'); ?></span></div>
                 <ul class="pricing-features">
-                    <li>Unlimited events</li>
-                    <li>500 participants per event</li>
-                    <li>Live matching rounds</li>
-                    <li>Analytics dashboard</li>
-                    <li>Priority support</li>
+                    <li><?php _e('landing.pro_f1'); ?></li>
+                    <li><?php _e('landing.pro_f2'); ?></li>
+                    <li><?php _e('landing.pro_f3'); ?></li>
+                    <li><?php _e('landing.pro_f4'); ?></li>
+                    <li><?php _e('landing.pro_f5'); ?></li>
                 </ul>
-                <a href="<?= base_url('login.php') ?>" class="btn btn-primary btn-block">Start Pro Trial</a>
+                <a href="<?= base_url('login.php') ?>" class="btn btn-primary btn-block"><?php _e('landing.start_pro_trial'); ?></a>
             </div>
             <div class="pricing-card card">
-                <h3>Enterprise</h3>
-                <div class="pricing-price">Contact Us</div>
+                <h3><?php _e('landing.enterprise'); ?></h3>
+                <div class="pricing-price"><?php _e('landing.contact_us'); ?></div>
                 <ul class="pricing-features">
-                    <li>Custom integrations</li>
-                    <li>Dedicated account manager</li>
-                    <li>White-label options</li>
-                    <li>SLA & premium support</li>
+                    <li><?php _e('landing.ent_f1'); ?></li>
+                    <li><?php _e('landing.ent_f2'); ?></li>
+                    <li><?php _e('landing.ent_f3'); ?></li>
+                    <li><?php _e('landing.ent_f4'); ?></li>
                 </ul>
-                <a href="mailto:hello@poomconnect.com" class="btn btn-outline btn-block">Contact Sales</a>
+                <a href="mailto:hello@poomconnect.com" class="btn btn-outline btn-block"><?php _e('landing.contact_sales'); ?></a>
             </div>
         </div>
     </div>

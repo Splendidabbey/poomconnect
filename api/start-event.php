@@ -9,18 +9,18 @@ $eventId = (int) ($_POST['event_id'] ?? 0);
 $event = get_event_for_organizer($eventId);
 
 if (!$event) {
-    json_response(['success' => false, 'message' => 'Event not found.']);
+    json_response(['success' => false, 'message' => __('api.event_not_found')]);
 }
 
 $participants = get_checked_in_participants($eventId);
 
 if (count($participants) < 2) {
-    json_response(['success' => false, 'message' => 'Need at least 2 checked-in participants to start.']);
+    json_response(['success' => false, 'message' => __('api.need_participants')]);
 }
 
 ensure_live_state($eventId, (int) $event['round_duration']);
 
-$pairs = generate_round_pairings($eventId, 1);
+$pairs = generate_ai_round_pairings($eventId, 1);
 
 $pdo = db();
 $pdo->beginTransaction();
@@ -31,7 +31,7 @@ try {
     }
 
     $update = $pdo->prepare(
-        'UPDATE live_event_state SET current_round = 1, event_status = ?, timer_seconds = ?, updated_at = NOW() WHERE event_id = ?'
+        'UPDATE live_event_state SET current_round = 1, event_status = ?, timer_seconds = ?, timer_started_at = NOW(), updated_at = NOW() WHERE event_id = ?'
     );
     $update->execute(['live', (int) $event['round_duration'], $eventId]);
 
@@ -42,9 +42,9 @@ try {
 
     log_admin_action((int) current_user()['id'], 'event_started', 'Event ID: ' . $eventId);
 
-    json_response(['success' => true, 'message' => 'Event started! Round 1 with ' . count($pairs) . ' pairings.']);
+    json_response(['success' => true, 'message' => __('api.event_started', ['count' => count($pairs)])]);
 } catch (Throwable $e) {
     $pdo->rollBack();
     error_log('Start event failed: ' . $e->getMessage());
-    json_response(['success' => false, 'message' => 'Failed to start event.']);
+    json_response(['success' => false, 'message' => __('api.event_start_failed')]);
 }

@@ -5,8 +5,9 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/config/app.php';
 require_admin();
 
-$pageTitle = 'Users';
-$bodyClass = 'dashboard-page';
+$pageTitle = __('admin.users_title');
+$bodyClass = 'dashboard-page admin-page';
+$hideNav = true;
 
 $users = db()->query('SELECT * FROM users ORDER BY created_at DESC LIMIT 100')->fetchAll();
 
@@ -14,15 +15,15 @@ require_once APP_ROOT . '/includes/header.php';
 echo render_flash();
 ?>
 
-<div class="dashboard-layout">
+<div class="admin-layout">
     <?php require APP_ROOT . '/includes/admin-sidebar.php'; ?>
-    <div class="dashboard-main">
-        <div class="dashboard-header"><h1>Users</h1></div>
+    <div class="admin-main">
+        <div class="dashboard-header"><h1><?php _e('admin.all_users'); ?></h1></div>
         <div class="card">
             <div class="table-wrap">
                 <table class="table">
                     <thead>
-                        <tr><th>Name</th><th>Email</th><th>Role</th><th>Phone</th><th>Joined</th></tr>
+                        <tr><th><?php _e('organizer.name'); ?></th><th><?php _e('auth.email'); ?></th><th><?php _e('admin.role'); ?></th><th>Phone</th><th><?php _e('admin.joined'); ?></th></tr>
                     </thead>
                     <tbody>
                         <?php foreach ($users as $u): ?>

@@ -36,7 +36,7 @@ function is_logged_in(): bool
     return current_user() !== null;
 }
 
-function login_user(string $email, string $password): bool
+function login_user(string $email, string $password, bool $allowParticipant = false): bool
 {
     $stmt = db()->prepare('SELECT * FROM users WHERE email = ? LIMIT 1');
     $stmt->execute([trim($email)]);
@@ -46,7 +46,12 @@ function login_user(string $email, string $password): bool
         return false;
     }
 
-    if (!in_array($user['role'], ['organizer', 'admin', 'super_admin'], true)) {
+    $allowedRoles = ['organizer', 'admin', 'super_admin', 'moderator'];
+    if ($allowParticipant) {
+        $allowedRoles[] = 'participant';
+    }
+
+    if (!in_array($user['role'], $allowedRoles, true)) {
         return false;
     }
 
@@ -54,7 +59,16 @@ function login_user(string $email, string $password): bool
     $_SESSION['user_id'] = (int) $user['id'];
     $_SESSION['user_role'] = $user['role'];
 
+    if ($user['role'] === 'participant') {
+        $_SESSION['participant_user_id'] = (int) $user['id'];
+    }
+
     return true;
+}
+
+function login_participant(string $email, string $password): bool
+{
+    return login_user($email, $password, true);
 }
 
 function logout_user(): void
@@ -72,12 +86,12 @@ function logout_user(): void
 function require_login(array $roles = []): void
 {
     if (!is_logged_in()) {
-        set_flash('error', 'Please log in to continue.');
+        set_flash('error', __('auth.login_required'));
         redirect(base_url('login.php'));
     }
 
     if ($roles !== [] && !in_array(current_user_role(), $roles, true)) {
-        set_flash('error', 'You do not have permission to access this page.');
+        set_flash('error', __('auth.permission_denied'));
         redirect(base_url('login.php'));
     }
 }
@@ -100,4 +114,19 @@ function is_admin(): bool
 function is_organizer(): bool
 {
     return in_array(current_user_role(), ['organizer', 'admin', 'super_admin'], true);
+}
+
+function require_participant(): void
+{
+    require_login(['participant']);
+}
+
+function is_participant(): bool
+{
+    return current_user_role() === 'participant';
+}
+
+function is_guest(): bool
+{
+    return !is_logged_in();
 }

@@ -50,7 +50,20 @@ function format_date(?string $date): string
         return '';
     }
 
-    return date('M j, Y', strtotime($date));
+    $ts = strtotime($date);
+
+    if (current_locale() === 'th') {
+        $months = [
+            1 => 'ม.ค.', 2 => 'ก.พ.', 3 => 'มี.ค.', 4 => 'เม.ย.',
+            5 => 'พ.ค.', 6 => 'มิ.ย.', 7 => 'ก.ค.', 8 => 'ส.ค.',
+            9 => 'ก.ย.', 10 => 'ต.ค.', 11 => 'พ.ย.', 12 => 'ธ.ค.',
+        ];
+        $month = (int) date('n', $ts);
+
+        return date('j', $ts) . ' ' . ($months[$month] ?? '') . ' ' . ((int) date('Y', $ts) + 543);
+    }
+
+    return date('M j, Y', $ts);
 }
 
 function format_time(?string $time): string
@@ -59,12 +72,18 @@ function format_time(?string $time): string
         return '';
     }
 
-    return date('g:i A', strtotime($time));
+    $ts = strtotime($time);
+
+    return current_locale() === 'th'
+        ? date('H:i', $ts) . ' น.'
+        : date('g:i A', $ts);
 }
 
-function format_currency(float $amount): string
+function spots_left_label(int $count): string
 {
-    return number_format($amount, 0) . ' THB';
+    return $count > 0
+        ? __('common.spots_left', ['count' => $count])
+        : __('common.sold_out');
 }
 
 function slugify(string $text): string
@@ -97,10 +116,13 @@ function get_organization_for_user(int $userId): ?array
 function get_event_by_id(int $eventId): ?array
 {
     $stmt = db()->prepare(
-        'SELECT e.*, o.name AS organization_name, o.promptpay_number, o.bank_name,
-                o.bank_account_name, o.bank_account_number
+        'SELECT e.*, o.name AS organization_name, o.slug AS organization_slug, o.logo AS organization_logo,
+                o.promptpay_number, o.bank_name, o.bank_account_name, o.bank_account_number,
+                c.name AS category_name, c.slug AS category_slug,
+                (SELECT COUNT(*) FROM event_participants ep WHERE ep.event_id = e.id) AS participant_count
          FROM events e
          JOIN organizations o ON o.id = e.organization_id
+         LEFT JOIN categories c ON c.id = e.category_id
          WHERE e.id = ? LIMIT 1'
     );
     $stmt->execute([$eventId]);
@@ -136,32 +158,32 @@ function get_spots_left(array $event): int
 function validate_upload(array $file): array
 {
     if (!isset($file['error']) || is_array($file['error'])) {
-        return ['ok' => false, 'error' => 'Invalid upload.'];
+        return ['ok' => false, 'error' => __('validation.invalid_upload')];
     }
 
     if ($file['error'] === UPLOAD_ERR_NO_FILE) {
-        return ['ok' => false, 'error' => 'Please select a file.'];
+        return ['ok' => false, 'error' => __('validation.select_file')];
     }
 
     if ($file['error'] !== UPLOAD_ERR_OK) {
-        return ['ok' => false, 'error' => 'Upload failed. Please try again.'];
+        return ['ok' => false, 'error' => __('validation.upload_failed')];
     }
 
     if ($file['size'] > UPLOAD_MAX_SIZE) {
-        return ['ok' => false, 'error' => 'File must be 5MB or smaller.'];
+        return ['ok' => false, 'error' => __('validation.file_too_large')];
     }
 
     $finfo = new finfo(FILEINFO_MIME_TYPE);
     $mime = $finfo->file($file['tmp_name']);
 
     if (!in_array($mime, ALLOWED_IMAGE_TYPES, true)) {
-        return ['ok' => false, 'error' => 'Only JPG, PNG, and WEBP images are allowed.'];
+        return ['ok' => false, 'error' => __('validation.invalid_image_type')];
     }
 
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
     if (!in_array($ext, ALLOWED_IMAGE_EXTENSIONS, true)) {
-        return ['ok' => false, 'error' => 'Invalid file extension.'];
+        return ['ok' => false, 'error' => __('validation.invalid_extension')];
     }
 
     return ['ok' => true, 'ext' => $ext, 'mime' => $mime];
@@ -273,6 +295,7 @@ function approve_payment(int $paymentId, int $approvedBy): bool
         $participant->execute(['approved', $payment['event_id'], $payment['user_id']]);
 
         generate_ticket((int) $payment['event_id'], (int) $payment['user_id']);
+        notify_payment_approved((int) $payment['user_id'], (int) $payment['event_id']);
 
         $pdo->commit();
         return true;
@@ -358,14 +381,14 @@ function checkin_ticket(string $qrToken): array
     $ticket = $stmt->fetch();
 
     if (!$ticket) {
-        return ['success' => false, 'message' => 'Invalid ticket QR code.'];
+        return ['success' => false, 'message' => __('checkin.invalid_qr')];
     }
 
     if ((int) $ticket['checked_in'] === 1) {
         return [
             'success' => false,
             'warning' => true,
-            'message' => $ticket['full_name'] . ' is already checked in.',
+            'message' => __('checkin.already_checked_in', ['name' => $ticket['full_name']]),
             'ticket' => $ticket,
         ];
     }
@@ -388,13 +411,13 @@ function checkin_ticket(string $qrToken): array
 
         return [
             'success' => true,
-            'message' => $ticket['full_name'] . ' checked in successfully.',
+            'message' => __('checkin.success', ['name' => $ticket['full_name']]),
             'ticket' => $ticket,
         ];
     } catch (Throwable $e) {
         $pdo->rollBack();
         error_log('Check-in failed: ' . $e->getMessage());
-        return ['success' => false, 'message' => 'Check-in failed. Please try again.'];
+        return ['success' => false, 'message' => __('checkin.failed')];
     }
 }
 
@@ -562,29 +585,15 @@ function process_match_votes(int $eventId, int $roundId, int $voterId, int $targ
         return;
     }
 
-    $mutualVotes = ['like', 'friend', 'business'];
-    $placeholders = implode(',', array_fill(0, count($mutualVotes), '?'));
-
     $check = db()->prepare(
-        "SELECT id FROM match_votes
-         WHERE event_id = ? AND voter_id = ? AND target_id = ?
-           AND vote IN ($placeholders)
-         LIMIT 1"
+        'SELECT vote FROM match_votes WHERE event_id = ? AND voter_id = ? AND target_id = ? LIMIT 1'
     );
-    $params = array_merge([$eventId, $targetId, $voterId], $mutualVotes);
-    $check->execute($params);
+    $check->execute([$eventId, $targetId, $voterId]);
+    $mutual = $check->fetch();
 
-    if (!$check->fetch()) {
-        return;
+    if ($mutual && $mutual['vote'] === $vote) {
+        record_mutual_match($eventId, $voterId, $targetId, $vote);
     }
-
-    $userA = min($voterId, $targetId);
-    $userB = max($voterId, $targetId);
-
-    $insert = db()->prepare(
-        'INSERT IGNORE INTO matches (event_id, user_a, user_b) VALUES (?, ?, ?)'
-    );
-    $insert->execute([$eventId, $userA, $userB]);
 }
 
 function organizer_stats(int $organizationId): array
@@ -648,6 +657,163 @@ function admin_stats(): array
         'matches' => (int) $pdo->query('SELECT COUNT(*) FROM matches')->fetchColumn(),
         'revenue' => (float) $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE payment_status = 'approved'")->fetchColumn(),
     ];
+}
+
+function admin_chart_series(int $days = 7): array
+{
+    $series = [];
+    for ($i = $days - 1; $i >= 0; $i--) {
+        $date = date('Y-m-d', strtotime("-{$i} days"));
+        $series[$date] = 0;
+    }
+
+    return $series;
+}
+
+function admin_dashboard_data(): array
+{
+    $pdo = db();
+    $stats = admin_stats();
+
+    $stats['participants'] = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'participant'")->fetchColumn();
+    $stats['organizers'] = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'organizer'")->fetchColumn();
+    $stats['registrations'] = (int) $pdo->query('SELECT COUNT(*) FROM event_participants')->fetchColumn();
+    $stats['live_events'] = (int) $pdo->query("SELECT COUNT(*) FROM events WHERE status IN ('live', 'paused')")->fetchColumn();
+    $stats['published_events'] = (int) $pdo->query("SELECT COUNT(*) FROM events WHERE status = 'published'")->fetchColumn();
+    $stats['tickets_issued'] = (int) $pdo->query('SELECT COUNT(*) FROM tickets')->fetchColumn();
+    $stats['checkins'] = (int) $pdo->query('SELECT COUNT(*) FROM tickets WHERE checked_in = 1')->fetchColumn();
+    $stats['revenue_week'] = (float) $pdo->query(
+        "SELECT COALESCE(SUM(amount), 0) FROM payments WHERE payment_status = 'approved' AND created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)"
+    )->fetchColumn();
+
+    $revenueByDay = admin_chart_series();
+    $revenueRows = $pdo->query(
+        "SELECT DATE(created_at) AS day, COALESCE(SUM(amount), 0) AS total
+         FROM payments
+         WHERE payment_status = 'approved' AND created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+         GROUP BY DATE(created_at)"
+    )->fetchAll();
+    foreach ($revenueRows as $row) {
+        if (isset($revenueByDay[$row['day']])) {
+            $revenueByDay[$row['day']] = (float) $row['total'];
+        }
+    }
+
+    $registrationsByDay = admin_chart_series();
+    $registrationRows = $pdo->query(
+        'SELECT DATE(created_at) AS day, COUNT(*) AS total
+         FROM event_participants
+         WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+         GROUP BY DATE(created_at)'
+    )->fetchAll();
+    foreach ($registrationRows as $row) {
+        if (isset($registrationsByDay[$row['day']])) {
+            $registrationsByDay[$row['day']] = (int) $row['total'];
+        }
+    }
+
+    $eventStatusRows = $pdo->query('SELECT status, COUNT(*) AS count FROM events GROUP BY status')->fetchAll();
+    $eventStatuses = [];
+    foreach ($eventStatusRows as $row) {
+        $eventStatuses[$row['status']] = (int) $row['count'];
+    }
+
+    $recentEvents = $pdo->query(
+        'SELECT e.*, o.name AS org_name,
+            (SELECT COUNT(*) FROM event_participants ep WHERE ep.event_id = e.id) AS participant_count
+         FROM events e
+         JOIN organizations o ON o.id = e.organization_id
+         ORDER BY e.event_date DESC, e.created_at DESC
+         LIMIT 6'
+    )->fetchAll();
+
+    $pendingPayments = $pdo->query(
+        "SELECT p.*, u.full_name, e.title AS event_title
+         FROM payments p
+         JOIN users u ON u.id = p.user_id
+         JOIN events e ON e.id = p.event_id
+         WHERE p.payment_status = 'pending'
+         ORDER BY p.created_at DESC
+         LIMIT 5"
+    )->fetchAll();
+
+    $recentLogs = $pdo->query(
+        'SELECT al.*, u.full_name
+         FROM admin_logs al
+         JOIN users u ON u.id = al.user_id
+         ORDER BY al.created_at DESC
+         LIMIT 12'
+    )->fetchAll();
+
+    $topOrganizations = $pdo->query(
+        "SELECT o.id, o.name,
+            COUNT(DISTINCT e.id) AS event_count,
+            COALESCE(SUM(CASE WHEN p.payment_status = 'approved' THEN p.amount ELSE 0 END), 0) AS revenue
+         FROM organizations o
+         LEFT JOIN events e ON e.organization_id = o.id
+         LEFT JOIN payments p ON p.event_id = e.id
+         GROUP BY o.id, o.name
+         ORDER BY revenue DESC, event_count DESC
+         LIMIT 5"
+    )->fetchAll();
+
+    return [
+        'stats' => $stats,
+        'revenue_by_day' => $revenueByDay,
+        'registrations_by_day' => $registrationsByDay,
+        'event_statuses' => $eventStatuses,
+        'recent_events' => $recentEvents,
+        'pending_payments' => $pendingPayments,
+        'recent_logs' => $recentLogs,
+        'top_organizations' => $topOrganizations,
+    ];
+}
+
+function admin_chart_points(array $values, int $width = 320, int $height = 100, int $pad = 8): array
+{
+    $count = count($values);
+    if ($count === 0) {
+        return ['path' => '', 'area' => '', 'points' => []];
+    }
+
+    $max = max($values) ?: 1;
+    $step = $count > 1 ? ($width - $pad * 2) / ($count - 1) : 0;
+    $points = [];
+
+    $i = 0;
+    foreach ($values as $value) {
+        $x = $pad + ($step * $i);
+        $y = $height - $pad - (($value / $max) * ($height - $pad * 2));
+        $points[] = ['x' => round($x, 1), 'y' => round($y, 1)];
+        $i++;
+    }
+
+    $line = [];
+    foreach ($points as $index => $point) {
+        $line[] = ($index === 0 ? 'M' : 'L') . $point['x'] . ',' . $point['y'];
+    }
+
+    $first = $points[0];
+    $last = $points[count($points) - 1];
+    $area = implode(' ', $line)
+        . ' L' . $last['x'] . ',' . ($height - $pad)
+        . ' L' . $first['x'] . ',' . ($height - $pad)
+        . ' Z';
+
+    return [
+        'path' => implode(' ', $line),
+        'area' => $area,
+        'points' => $points,
+        'max' => $max,
+    ];
+}
+
+function admin_action_label(string $action): string
+{
+    $key = 'admin.actions.' . $action;
+    $label = __($key);
+
+    return $label !== $key ? $label : ucwords(str_replace('_', ' ', $action));
 }
 
 function user_can_manage_event(int $userId, array $event): bool

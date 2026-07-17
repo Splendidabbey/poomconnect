@@ -8,7 +8,7 @@ require_api_organizer();
 $qrToken = trim($_POST['qr_token'] ?? '');
 
 if ($qrToken === '') {
-    json_response(['success' => false, 'message' => 'QR token required.']);
+    json_response(['success' => false, 'message' => __('api.qr_required')]);
 }
 
 $result = checkin_ticket($qrToken);

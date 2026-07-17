@@ -12,65 +12,63 @@ if (!$org && !is_admin()) {
     redirect(base_url('organizer/dashboard.php'));
 }
 
-$pageTitle = 'Create Event';
+$pageTitle = __('organizer.create_event_title');
 $bodyClass = 'dashboard-page';
 $errors = [];
+$event = null;
+if (!empty($_GET['template_id'])) {
+    $tpl = get_event_template((int) $_GET['template_id']);
+    if ($tpl) {
+        $event = apply_template_to_event_data($tpl);
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = trim($_POST['title'] ?? '');
-    $description = trim($_POST['description'] ?? '');
-    $location = trim($_POST['location'] ?? '');
-    $eventDate = $_POST['event_date'] ?? '';
-    $startTime = $_POST['start_time'] ?? '';
-    $endTime = $_POST['end_time'] ?? '';
-    $maxParticipants = (int) ($_POST['max_participants'] ?? 50);
-    $ticketPrice = (float) ($_POST['ticket_price'] ?? 0);
-    $roundDuration = (int) ($_POST['round_duration'] ?? 300);
-    $status = $_POST['status'] ?? 'draft';
+    $data = parse_event_builder_data($_POST);
 
-    if ($title === '') {
-        $errors[] = 'Event title is required.';
+    if ($data['title'] === '') {
+        $errors[] = __('validation.event_title_required');
     }
-    if ($eventDate === '') {
-        $errors[] = 'Event date is required.';
+    if ($data['event_date'] === '') {
+        $errors[] = __('validation.event_date_required');
     }
     if (!$org && !is_admin()) {
-        $errors[] = 'Organization required.';
+        $errors[] = __('validation.organization_required');
     }
 
     $coverPath = null;
     if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] !== UPLOAD_ERR_NO_FILE) {
         $coverPath = save_upload($_FILES['cover_image'], 'events', 'event');
         if (!$coverPath) {
-            $errors[] = 'Invalid cover image. Use JPG, PNG, or WEBP under 5MB.';
+            $errors[] = __('validation.invalid_file');
+        }
+    }
+
+    $ogImagePath = null;
+    if (isset($_FILES['og_image']) && $_FILES['og_image']['error'] !== UPLOAD_ERR_NO_FILE) {
+        $ogImagePath = save_upload($_FILES['og_image'], 'events/og', 'og');
+        if (!$ogImagePath) {
+            $errors[] = __('validation.invalid_file');
+        }
+    }
+
+    $bannerPath = null;
+    if (isset($_FILES['banner_image']) && $_FILES['banner_image']['error'] !== UPLOAD_ERR_NO_FILE) {
+        $bannerPath = save_upload($_FILES['banner_image'], 'events/banners', 'banner');
+    }
+
+    if ($errors === [] && $org) {
+        if (!org_within_event_limit((int) $org['id'])) {
+            $errors[] = __('subscription.event_limit');
         }
     }
 
     if ($errors === [] && $org) {
-        $stmt = db()->prepare(
-            'INSERT INTO events (organization_id, title, description, cover_image, location, event_date, start_time, end_time, max_participants, ticket_price, round_duration, status, created_by)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-        );
-        $stmt->execute([
-            $org['id'],
-            $title,
-            $description,
-            $coverPath,
-            $location,
-            $eventDate,
-            $startTime,
-            $endTime,
-            max(1, $maxParticipants),
-            $ticketPrice,
-            max(60, $roundDuration),
-            in_array($status, ['draft', 'published'], true) ? $status : 'draft',
-            $user['id'],
-        ]);
+        $eventId = create_event_record_extended((int) $org['id'], (int) $user['id'], $data, $coverPath, $ogImagePath, $bannerPath);
+        save_event_gallery($eventId, $_FILES['gallery_images'] ?? []);
+        ensure_live_state($eventId, $data['round_duration']);
 
-        $eventId = (int) db()->lastInsertId();
-        ensure_live_state($eventId, max(60, $roundDuration));
-
-        set_flash('success', 'Event created successfully!');
+        set_flash('success', __('flash.event_created'));
         redirect(base_url('organizer/events.php'));
     }
 }
@@ -84,83 +82,22 @@ echo render_flash();
     <div class="dashboard-main">
         <div class="dashboard-header">
             <div>
-                <h1>Create Event</h1>
-                <p>Set up a new matching event</p>
+                <h1><?php _e('organizer.create_event_title'); ?></h1>
+                <p><?php _e('organizer.event_details'); ?></p>
             </div>
         </div>
 
-        <div class="card" style="max-width:720px;">
+        <div class="card form-card-wide">
             <?php foreach ($errors as $error): ?>
                 <div class="alert alert-error"><?= e($error) ?></div>
             <?php endforeach; ?>
 
             <?php if (!$org && !is_admin()): ?>
-                <div class="alert alert-error">Please set up your organization in Settings first.</div>
+                <div class="alert alert-error"><?php _e('flash.no_organization'); ?></div>
             <?php else: ?>
                 <form method="post" enctype="multipart/form-data" data-loading>
-                    <div class="form-group">
-                        <label for="title">Event Title *</label>
-                        <input type="text" id="title" name="title" class="input" required value="<?= e($_POST['title'] ?? '') ?>">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="description">Description</label>
-                        <textarea id="description" name="description" class="textarea"><?= e($_POST['description'] ?? '') ?></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cover_image">Cover Image</label>
-                        <input type="file" id="cover_image" name="cover_image" class="input" accept=".jpg,.jpeg,.png,.webp">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="location">Location</label>
-                        <input type="text" id="location" name="location" class="input" value="<?= e($_POST['location'] ?? '') ?>">
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="event_date">Date *</label>
-                            <input type="date" id="event_date" name="event_date" class="input" required value="<?= e($_POST['event_date'] ?? '') ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="status">Status</label>
-                            <select id="status" name="status" class="select">
-                                <option value="draft">Draft</option>
-                                <option value="published" selected>Published</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="start_time">Start Time</label>
-                            <input type="time" id="start_time" name="start_time" class="input" value="<?= e($_POST['start_time'] ?? '18:00') ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="end_time">End Time</label>
-                            <input type="time" id="end_time" name="end_time" class="input" value="<?= e($_POST['end_time'] ?? '22:00') ?>">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="max_participants">Max Participants</label>
-                            <input type="number" id="max_participants" name="max_participants" class="input" min="2" value="<?= e($_POST['max_participants'] ?? '50') ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="ticket_price">Ticket Price (THB)</label>
-                            <input type="number" id="ticket_price" name="ticket_price" class="input" min="0" step="1" value="<?= e($_POST['ticket_price'] ?? '990') ?>">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="round_duration">Round Duration (seconds)</label>
-                        <input type="number" id="round_duration" name="round_duration" class="input" min="60" value="<?= e($_POST['round_duration'] ?? '300') ?>">
-                        <p class="form-help">Default: 300 seconds (5 minutes per round)</p>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary btn-lg">Create Event</button>
+                    <?php require APP_ROOT . '/includes/event-form-fields.php'; ?>
+                    <button type="submit" class="btn btn-primary btn-lg"><?php _e('organizer.create_btn'); ?></button>
                 </form>
             <?php endif; ?>
         </div>

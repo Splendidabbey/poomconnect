@@ -15,7 +15,7 @@ function json_response(array $data, int $code = 200): never
 function require_api_organizer(): void
 {
     if (!is_logged_in() || !is_organizer()) {
-        json_response(['success' => false, 'message' => 'Unauthorized'], 401);
+        json_response(['success' => false, 'message' => __('api.unauthorized')], 401);
     }
 }
 

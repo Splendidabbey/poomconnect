@@ -5,8 +5,9 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/config/app.php';
 require_admin();
 
-$pageTitle = 'Payments';
-$bodyClass = 'dashboard-page';
+$pageTitle = __('admin.payments_title');
+$bodyClass = 'dashboard-page admin-page';
+$hideNav = true;
 
 $payments = db()->query(
     'SELECT p.*, u.full_name, e.title AS event_title FROM payments p
@@ -19,15 +20,15 @@ require_once APP_ROOT . '/includes/header.php';
 echo render_flash();
 ?>
 
-<div class="dashboard-layout">
+<div class="admin-layout">
     <?php require APP_ROOT . '/includes/admin-sidebar.php'; ?>
-    <div class="dashboard-main">
-        <div class="dashboard-header"><h1>All Payments</h1></div>
+    <div class="admin-main">
+        <div class="dashboard-header"><h1><?php _e('admin.all_payments'); ?></h1></div>
         <div class="card">
             <div class="table-wrap">
                 <table class="table">
                     <thead>
-                        <tr><th>Participant</th><th>Event</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+                        <tr><th><?php _e('ticket_page.participant'); ?></th><th><?php _e('organizer.event'); ?></th><th><?php _e('common.amount'); ?></th><th><?php _e('common.status'); ?></th><th><?php _e('common.date'); ?></th></tr>
                     </thead>
                     <tbody>
                         <?php foreach ($payments as $p): ?>
@@ -35,7 +36,7 @@ echo render_flash();
                                 <td><?= e($p['full_name']) ?></td>
                                 <td><?= e($p['event_title']) ?></td>
                                 <td><?= e(format_currency((float) $p['amount'])) ?></td>
-                                <td><span class="badge badge-<?= $p['payment_status'] === 'approved' ? 'success' : ($p['payment_status'] === 'rejected' ? 'danger' : 'warning') ?>"><?= e($p['payment_status']) ?></span></td>
+                                <td><span class="badge badge-<?= $p['payment_status'] === 'approved' ? 'success' : ($p['payment_status'] === 'rejected' ? 'danger' : 'warning') ?>"><?= e(status_label($p['payment_status'])) ?></span></td>
                                 <td><?= e(format_date($p['created_at'])) ?></td>
                             </tr>
                         <?php endforeach; ?>

@@ -9,7 +9,7 @@ $user = current_user();
 $org = get_organization_for_user((int) $user['id']);
 $orgId = $org ? (int) $org['id'] : 0;
 
-$pageTitle = 'Events';
+$pageTitle = __('organizer.events_title');
 $bodyClass = 'dashboard-page';
 
 $events = [];
@@ -28,10 +28,10 @@ echo render_flash();
     <div class="dashboard-main">
         <div class="dashboard-header">
             <div>
-                <h1>Events</h1>
-                <p>Manage all your events</p>
+                <h1><?php _e('organizer.events_title'); ?></h1>
+                <p><?php _e('organizer.your_events'); ?></p>
             </div>
-            <a href="<?= base_url('organizer/create-event.php') ?>" class="btn btn-primary">+ Create Event</a>
+            <a href="<?= base_url('organizer/create-event.php') ?>" class="btn btn-primary"><?php _e('organizer.create_event'); ?></a>
         </div>
 
         <div class="card">
@@ -40,11 +40,11 @@ echo render_flash();
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Event</th>
-                                <th>Date</th>
-                                <th>Price</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th><?php _e('organizer.event'); ?></th>
+                                <th><?php _e('common.date'); ?></th>
+                                <th><?php _e('common.amount'); ?></th>
+                                <th><?php _e('common.status'); ?></th>
+                                <th><?php _e('common.actions'); ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -53,12 +53,12 @@ echo render_flash();
                                     <td><strong><?= e($ev['title']) ?></strong></td>
                                     <td><?= e(format_date($ev['event_date'])) ?></td>
                                     <td><?= e(format_currency((float) $ev['ticket_price'])) ?></td>
-                                    <td><span class="badge badge-purple"><?= e(ucfirst($ev['status'])) ?></span></td>
+                                    <td><span class="badge badge-purple"><?= e(status_label($ev['status'])) ?></span></td>
                                     <td class="table-actions">
                                         <a href="<?= base_url('organizer/edit-event.php?id=' . (int) $ev['id']) ?>" class="btn btn-ghost btn-sm">Edit</a>
-                                        <a href="<?= base_url('organizer/participants.php?event_id=' . (int) $ev['id']) ?>" class="btn btn-ghost btn-sm">Participants</a>
-                                        <a href="<?= base_url('organizer/payments.php?event_id=' . (int) $ev['id']) ?>" class="btn btn-ghost btn-sm">Payments</a>
-                                        <a href="<?= base_url('organizer/live.php?event_id=' . (int) $ev['id']) ?>" class="btn btn-primary btn-sm">Live</a>
+                                        <a href="<?= base_url('organizer/participants.php?event_id=' . (int) $ev['id']) ?>" class="btn btn-ghost btn-sm"><?php _e('sidebar.participants'); ?></a>
+                                        <a href="<?= base_url('organizer/payments.php?event_id=' . (int) $ev['id']) ?>" class="btn btn-ghost btn-sm"><?php _e('sidebar.payments'); ?></a>
+                                        <a href="<?= base_url('organizer/live.php?event_id=' . (int) $ev['id']) ?>" class="btn btn-primary btn-sm"><?php _e('organizer.live'); ?></a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -67,8 +67,8 @@ echo render_flash();
                 </div>
             <?php else: ?>
                 <div class="empty-state">
-                    <h3>No events yet</h3>
-                    <a href="<?= base_url('organizer/create-event.php') ?>" class="btn btn-primary" style="margin-top:1rem;">Create Event</a>
+                    <h3><?php _e('organizer.no_events_list'); ?></h3>
+                    <a href="<?= base_url('organizer/create-event.php') ?>" class="btn btn-primary" style="margin-top:1rem;"><?php _e('organizer.create_btn'); ?></a>
                 </div>
             <?php endif; ?>
         </div>

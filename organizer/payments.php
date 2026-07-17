@@ -9,7 +9,7 @@ $user = current_user();
 $org = get_organization_for_user((int) $user['id']);
 $orgId = $org ? (int) $org['id'] : 0;
 
-$pageTitle = 'Payment Approvals';
+$pageTitle = __('organizer.payments_title');
 $bodyClass = 'dashboard-page';
 
 $eventFilter = (int) ($_GET['event_id'] ?? 0);
@@ -44,8 +44,7 @@ echo render_flash();
     <div class="dashboard-main">
         <div class="dashboard-header">
             <div>
-                <h1>Payment Approvals</h1>
-                <p>Review and approve participant payment slips</p>
+                <h1><?php _e('organizer.payments_title'); ?></h1>
             </div>
         </div>
 
@@ -55,12 +54,12 @@ echo render_flash();
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Participant</th>
-                                <th>Event</th>
-                                <th>Amount</th>
+                                <th><?php _e('ticket_page.participant'); ?></th>
+                                <th><?php _e('organizer.event'); ?></th>
+                                <th><?php _e('common.amount'); ?></th>
                                 <th>Slip</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th><?php _e('common.status'); ?></th>
+                                <th><?php _e('common.actions'); ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -89,14 +88,14 @@ echo render_flash();
                                             default => 'warning',
                                         };
                                         ?>
-                                        <span class="badge badge-<?= $badge ?>"><?= e(ucfirst($payment['payment_status'])) ?></span>
+                                        <span class="badge badge-<?= $badge ?>"><?= e(status_label($payment['payment_status'])) ?></span>
                                     </td>
                                     <td class="table-actions">
                                         <?php if ($payment['payment_status'] === 'pending' && $payment['slip_image']): ?>
-                                            <button class="btn btn-primary btn-sm" onclick="approvePayment(<?= (int) $payment['id'] ?>)">Approve</button>
-                                            <button class="btn btn-outline btn-sm" onclick="rejectPayment(<?= (int) $payment['id'] ?>)">Reject</button>
+                                            <button class="btn btn-primary btn-sm" data-confirm="<?= e(__('js.approve_payment')) ?>" onclick="approvePayment(<?= (int) $payment['id'] ?>)"><?php _e('organizer.approve'); ?></button>
+                                            <button class="btn btn-outline btn-sm" data-confirm="<?= e(__('js.reject_payment')) ?>" onclick="rejectPayment(<?= (int) $payment['id'] ?>)"><?php _e('organizer.reject'); ?></button>
                                         <?php elseif ($payment['payment_status'] === 'approved'): ?>
-                                            <span class="badge badge-success">Ticket Issued</span>
+                                            <span class="badge badge-success"><?php _e('status.issued'); ?></span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
@@ -106,8 +105,7 @@ echo render_flash();
                 </div>
             <?php else: ?>
                 <div class="empty-state">
-                    <h3>No payments yet</h3>
-                    <p>Payment slips will appear here when participants register.</p>
+                    <p><?php _e('organizer.no_payments'); ?></p>
                 </div>
             <?php endif; ?>
         </div>
@@ -116,13 +114,11 @@ echo render_flash();
 
 <script>
 async function approvePayment(id) {
-    if (!confirm('Approve this payment and generate ticket?')) return;
     const res = await apiPost('<?= base_url('api/approve-payment.php') ?>', { payment_id: id });
     alert(res.message);
     if (res.success) location.reload();
 }
 async function rejectPayment(id) {
-    if (!confirm('Reject this payment?')) return;
     const res = await apiPost('<?= base_url('api/reject-payment.php') ?>', { payment_id: id });
     alert(res.message);
     if (res.success) location.reload();

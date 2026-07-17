@@ -9,7 +9,7 @@ $eventId = (int) ($_POST['event_id'] ?? 0);
 $event = get_event_for_organizer($eventId);
 
 if (!$event) {
-    json_response(['success' => false, 'message' => 'Event not found.']);
+    json_response(['success' => false, 'message' => __('api.event_not_found')]);
 }
 
 $liveState = get_live_state($eventId);
@@ -22,13 +22,13 @@ $nextRound = (int) $liveState['current_round'] + 1;
 $participants = get_checked_in_participants($eventId);
 
 if (count($participants) < 2) {
-    json_response(['success' => false, 'message' => 'Need at least 2 checked-in participants.']);
+    json_response(['success' => false, 'message' => __('api.need_participants_round')]);
 }
 
-$pairs = generate_round_pairings($eventId, $nextRound);
+$pairs = generate_ai_round_pairings($eventId, $nextRound);
 
 if ($pairs === []) {
-    json_response(['success' => false, 'message' => 'Could not generate pairings.']);
+    json_response(['success' => false, 'message' => __('api.no_pairings')]);
 }
 
 $pdo = db();
@@ -38,7 +38,7 @@ try {
     save_round_pairings($eventId, $pairs);
 
     $update = $pdo->prepare(
-        'UPDATE live_event_state SET current_round = ?, event_status = ?, timer_seconds = ?, updated_at = NOW() WHERE event_id = ?'
+        'UPDATE live_event_state SET current_round = ?, event_status = ?, timer_seconds = ?, timer_started_at = NOW(), updated_at = NOW() WHERE event_id = ?'
     );
     $update->execute([$nextRound, 'live', (int) $event['round_duration'], $eventId]);
 
@@ -47,9 +47,9 @@ try {
 
     $pdo->commit();
 
-    json_response(['success' => true, 'message' => 'Round ' . $nextRound . ' started with ' . count($pairs) . ' pairings.']);
+    json_response(['success' => true, 'message' => __('api.round_started', ['round' => $nextRound, 'count' => count($pairs)])]);
 } catch (Throwable $e) {
     $pdo->rollBack();
     error_log('Next round failed: ' . $e->getMessage());
-    json_response(['success' => false, 'message' => 'Failed to start next round.']);
+    json_response(['success' => false, 'message' => __('api.round_failed')]);
 }
