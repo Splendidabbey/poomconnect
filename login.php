@@ -43,7 +43,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect(base_url('my-events.php'));
         }
     } else {
-        $errors[] = __('auth.invalid_credentials');
+        $stmt = db()->prepare('SELECT account_status FROM users WHERE email = ? LIMIT 1');
+        $stmt->execute([$email]);
+        $status = $stmt->fetchColumn();
+        if ($status === 'inactive') {
+            $errors[] = __('admin_users.account_inactive');
+        } else {
+            $errors[] = __('auth.invalid_credentials');
+        }
     }
 }
 

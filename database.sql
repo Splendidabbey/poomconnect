@@ -83,6 +83,11 @@ CREATE TABLE users (
     referral_credits INT UNSIGNED NOT NULL DEFAULT 0,
     is_vip TINYINT(1) NOT NULL DEFAULT 0,
     role ENUM('participant', 'organizer', 'moderator', 'admin', 'super_admin') NOT NULL DEFAULT 'participant',
+    account_status ENUM('active','inactive') NOT NULL DEFAULT 'active',
+    deactivated_at TIMESTAMP NULL,
+    deactivated_by INT UNSIGNED NULL,
+    admin_notes TEXT NULL,
+    last_login_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

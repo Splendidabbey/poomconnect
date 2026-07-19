@@ -611,3 +611,132 @@
         grid-template-columns: 1fr;
     }
 }
+
+.admin-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
+
+.admin-user-kpi {
+    margin-bottom: 1.25rem;
+}
+
+.admin-filter-card {
+    margin-bottom: 1.25rem;
+}
+
+.admin-user-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.admin-filter-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.admin-access-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 0.82rem;
+    color: var(--text-soft, #9ca3af);
+}
+
+.admin-actions-cell {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.admin-inline-form {
+    display: inline;
+}
+
+.row-inactive {
+    opacity: 0.72;
+}
+
+.admin-user-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+.admin-user-grid-full {
+    grid-column: 1 / -1;
+}
+
+.admin-user-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.admin-control-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.admin-control-form,
+.admin-role-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.admin-delete-form {
+    margin-top: 0.5rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-danger {
+    border-color: rgba(239, 68, 68, 0.45);
+    color: #fca5a5;
+}
+
+.btn-danger:hover {
+    background: rgba(239, 68, 68, 0.12);
+    color: #fecaca;
+}
+
+.admin-detail-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.admin-detail-list > div {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 0.75rem;
+}
+
+.admin-detail-list dt {
+    color: var(--text-soft, #9ca3af);
+    font-size: 0.85rem;
+}
+
+.admin-detail-list dd {
+    margin: 0;
+}
+
+@media (max-width: 900px) {
+    .admin-user-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-detail-list > div {
+        grid-template-columns: 1fr;
+    }
+}
+

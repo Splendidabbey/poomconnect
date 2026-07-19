@@ -16,7 +16,7 @@ $adminUser = current_user();
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
                 <?php _e('sidebar.dashboard'); ?>
             </a>
-            <a href="<?= base_url('admin/users.php') ?>" class="admin-nav-link<?= $adminCurrent === 'users.php' ? ' is-active' : '' ?>">
+            <a href="<?= base_url('admin/users.php') ?>" class="admin-nav-link<?= in_array($adminCurrent, ['users.php', 'user.php'], true) ? ' is-active' : '' ?>">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20v-1a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v1"/></svg>
                 <?php _e('sidebar.users'); ?>
             </a>

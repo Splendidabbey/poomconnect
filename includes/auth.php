@@ -46,6 +46,10 @@ function login_user(string $email, string $password, bool $allowParticipant = fa
         return false;
     }
 
+    if (!user_is_active($user)) {
+        return false;
+    }
+
     $allowedRoles = ['organizer', 'admin', 'super_admin', 'moderator'];
     if ($allowParticipant) {
         $allowedRoles[] = 'participant';
@@ -58,6 +62,10 @@ function login_user(string $email, string $password, bool $allowParticipant = fa
     session_regenerate_id(true);
     $_SESSION['user_id'] = (int) $user['id'];
     $_SESSION['user_role'] = $user['role'];
+
+    if (function_exists('record_user_login')) {
+        record_user_login((int) $user['id']);
+    }
 
     if ($user['role'] === 'participant') {
         $_SESSION['participant_user_id'] = (int) $user['id'];
@@ -87,6 +95,13 @@ function require_login(array $roles = []): void
 {
     if (!is_logged_in()) {
         set_flash('error', __('auth.login_required'));
+        redirect(base_url('login.php'));
+    }
+
+    $user = current_user();
+    if ($user && function_exists('user_is_active') && !user_is_active($user)) {
+        logout_user();
+        set_flash('error', __('admin_users.account_inactive'));
         redirect(base_url('login.php'));
     }
 

@@ -37,6 +37,7 @@ require_once APP_ROOT . '/includes/marketplace.php';
 require_once APP_ROOT . '/includes/templates.php';
 require_once APP_ROOT . '/includes/ai_policy.php';
 require_once APP_ROOT . '/includes/admin-platform.php';
+require_once APP_ROOT . '/includes/admin-users.php';
 require_once APP_ROOT . '/includes/marketing.php';
 require_once APP_ROOT . '/includes/social-share.php';
 require_once APP_ROOT . '/includes/auth.php';
@@ -53,6 +54,7 @@ ensure_marketplace_schema();
 ensure_templates_schema();
 ensure_ai_policy_schema();
 ensure_admin_platform_schema();
+ensure_admin_users_schema();
 ensure_localization_schema();
 ensure_marketing_schema();
 
