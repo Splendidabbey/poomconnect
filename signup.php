@@ -20,6 +20,8 @@ $errors = [];
 $role = $_GET['role'] ?? 'participant';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     $fullName = trim($_POST['full_name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
@@ -27,6 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $role = $_POST['role'] ?? 'participant';
     $orgName = trim($_POST['organization_name'] ?? '');
 
+    if (rate_limit_exceeded('signup', client_ip(), 10, 300)) {
+        $errors[] = __('validation.too_many_attempts');
+    }
     if ($fullName === '') {
         $errors[] = __('validation.full_name_required');
     }
@@ -44,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($errors === []) {
+        rate_limit_hit('signup', client_ip());
         $result = register_account($fullName, $email, $password, $role, $orgName ?: null);
         if ($result['ok']) {
             login_user($email, $password, true);
@@ -80,6 +86,7 @@ echo render_flash();
         </div>
 
         <form method="post" data-loading>
+            <?= csrf_field() ?>
             <input type="hidden" name="role" value="<?= e($role) ?>">
             <?php if (!empty($_GET['ref'])): ?><input type="hidden" name="ref" value="<?= e($_GET['ref']) ?>"><?php endif; ?>
 

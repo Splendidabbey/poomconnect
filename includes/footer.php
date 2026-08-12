@@ -25,6 +25,7 @@
 
 <script>
 window.PoomI18n = <?= json_encode(js_translations(), JSON_UNESCAPED_UNICODE) ?>;
+window.PoomCsrfToken = <?= json_encode(csrf_token()) ?>;
 </script>
 <script src="<?= asset_url('js/app.js') ?>"></script>
 </body>

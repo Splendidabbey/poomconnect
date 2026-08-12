@@ -6,11 +6,11 @@ $localConfig = __DIR__ . '/database.local.php';
 if (is_file($localConfig)) {
     require_once $localConfig;
 } else {
-    define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-    define('DB_NAME', getenv('DB_NAME') ?: 'poomconnect');
-    define('DB_USER', getenv('DB_USER') ?: 'root');
-    define('DB_PASS', getenv('DB_PASS') ?: 'root');
-    define('DB_CHARSET', getenv('DB_CHARSET') ?: 'utf8mb4');
+    define('DB_HOST', $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: 'localhost');
+    define('DB_NAME', $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: 'poomconnect');
+    define('DB_USER', $_ENV['DB_USER'] ?? getenv('DB_USER') ?: 'root');
+    define('DB_PASS', $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?: 'root');
+    define('DB_CHARSET', $_ENV['DB_CHARSET'] ?? getenv('DB_CHARSET') ?: 'utf8mb4');
 }
 
 if (!defined('DB_CHARSET')) {

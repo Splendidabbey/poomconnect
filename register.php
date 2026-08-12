@@ -24,6 +24,8 @@ $errors = [];
 $couponDiscount = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     $fullName = trim($_POST['full_name'] ?? ($loggedInUser['full_name'] ?? ''));
     $email = trim($_POST['email'] ?? ($loggedInUser['email'] ?? ''));
     $phone = trim($_POST['phone'] ?? ($loggedInUser['phone'] ?? ''));
@@ -42,6 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    if ($action === 'register' && rate_limit_exceeded('register', client_ip(), 20, 300)) {
+        $errors[] = __('validation.too_many_attempts');
+    }
     if ($fullName === '') {
         $errors[] = __('validation.full_name_required');
     }
@@ -50,6 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($errors === []) {
+        rate_limit_hit('register', client_ip());
+
         if ($loggedInUser && $loggedInUser['role'] === 'participant') {
             $user = $loggedInUser;
         } else {
@@ -131,6 +138,7 @@ echo render_flash();
         <?php endforeach; ?>
 
         <form method="post" data-loading>
+            <?= csrf_field() ?>
             <input type="hidden" name="event_id" value="<?= $eventId ?>">
             <input type="hidden" name="action" value="register">
 
@@ -175,6 +183,7 @@ echo render_flash();
         <hr style="margin:2rem 0;border-color:rgba(255,255,255,0.1);">
         <h3><?php _e('register_page.invite_friends'); ?></h3>
         <form method="post">
+            <?= csrf_field() ?>
             <input type="hidden" name="event_id" value="<?= $eventId ?>">
             <input type="hidden" name="action" value="invite">
             <div class="form-group">

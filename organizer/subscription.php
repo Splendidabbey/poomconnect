@@ -16,6 +16,8 @@ $current = get_org_subscription((int) $org['id']);
 $plans = get_subscription_plans();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['plan_slug'])) {
+    csrf_verify_or_redirect();
+
     assign_org_plan((int) $org['id'], (string) $_POST['plan_slug']);
     set_flash('success', __('subscription.plan_updated'));
     redirect(base_url('organizer/subscription.php'));
@@ -47,7 +49,7 @@ echo render_flash();
                         <?php if (!empty($features['ai_matching'])): ?><li><?php _e('subscription.ai_matching'); ?></li><?php endif; ?>
                         <?php if (!empty($features['community'])): ?><li><?php _e('subscription.community'); ?></li><?php endif; ?>
                     </ul>
-                    <form method="post"><input type="hidden" name="plan_slug" value="<?= e($plan['slug']) ?>">
+                    <form method="post"><?= csrf_field() ?><input type="hidden" name="plan_slug" value="<?= e($plan['slug']) ?>">
                         <button type="submit" class="btn btn-primary btn-sm"><?php _e('subscription.select'); ?></button>
                     </form>
                 </div>

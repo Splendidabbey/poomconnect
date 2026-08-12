@@ -11,6 +11,8 @@ $bodyClass = 'dashboard-page admin-page';
 $hideNav = true;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     log_admin_action((int) $user['id'], 'settings_update', 'Admin settings page accessed');
     set_flash('success', __('flash.admin_settings_saved'));
     redirect(base_url('admin/settings.php'));
@@ -27,6 +29,7 @@ echo render_flash();
         <div class="card" style="max-width:560px;">
             <p style="margin-bottom:1.5rem;"><?php _e('admin.settings_placeholder'); ?></p>
             <form method="post">
+                <?= csrf_field() ?>
                 <div class="form-group">
                     <label><?php _e('app.name'); ?></label>
                     <input type="text" class="input" value="<?= e(app_name()) ?>" readonly>

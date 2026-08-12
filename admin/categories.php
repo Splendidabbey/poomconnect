@@ -11,6 +11,8 @@ $hideNav = true;
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     $name = trim($_POST['name'] ?? '');
     $type = in_array($_POST['type'] ?? '', ['event', 'blog', 'both'], true) ? $_POST['type'] : 'both';
 
@@ -45,6 +47,7 @@ echo render_flash();
                 <div class="alert alert-error"><?= e($error) ?></div>
             <?php endforeach; ?>
             <form method="post" class="form-inline-row">
+                <?= csrf_field() ?>
                 <div class="form-group">
                     <label for="name"><?php _e('admin.category_name'); ?></label>
                     <input type="text" id="name" name="name" class="input" required>

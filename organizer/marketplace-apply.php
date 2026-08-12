@@ -10,6 +10,8 @@ $pageTitle = __('marketplace.apply_title');
 $existing = user_host_application($userId);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$existing) {
+    csrf_verify_or_redirect();
+
     $types = $_POST['event_types'] ?? [];
     if (!is_array($types)) {
         $types = [];
@@ -39,6 +41,7 @@ echo render_flash();
             </div>
         <?php else: ?>
             <form method="post" class="card">
+                <?= csrf_field() ?>
                 <div class="form-group"><label><?php _e('marketplace.org_name'); ?></label><input class="input" name="organization_name" required></div>
                 <div class="form-group"><label><?php _e('marketplace.event_types'); ?></label>
                     <?php foreach (platform_event_types() as $type): ?>

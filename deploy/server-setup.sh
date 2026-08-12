@@ -15,7 +15,7 @@ DB_PASS="${DB_PASS:-$(openssl rand -base64 24)}"
 echo "==> Installing packages..."
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y -qq nginx mysql-server php-fpm php-mysql php-mbstring php-xml php-gd php-curl php-zip rsync git ufw
+apt-get install -y -qq nginx mysql-server php-fpm php-mysql php-mbstring php-xml php-gd php-curl php-zip php-sodium composer rsync git ufw
 
 echo "==> Creating deploy user..."
 if ! id "$DEPLOY_USER" &>/dev/null; then
@@ -46,6 +46,16 @@ define('DB_CHARSET', 'utf8mb4');
 EOF
 chmod 640 "$DEPLOY_PATH/config/database.local.php"
 chown "$DEPLOY_USER:www-data" "$DEPLOY_PATH/config/database.local.php"
+
+echo "==> Creating .env (encryption key for payment gateway secrets)..."
+APP_ENCRYPTION_KEY="$(openssl rand -base64 32)"
+cat > "$DEPLOY_PATH/.env" <<EOF
+APP_URL=https://${DOMAIN}
+APP_ENV=production
+APP_ENCRYPTION_KEY=${APP_ENCRYPTION_KEY}
+EOF
+chmod 640 "$DEPLOY_PATH/.env"
+chown "$DEPLOY_USER:www-data" "$DEPLOY_PATH/.env"
 
 echo "==> Nginx site config..."
 cat > "/etc/nginx/sites-available/poomconnect" <<EOF
@@ -104,9 +114,11 @@ echo ""
 echo " NEXT STEPS:"
 echo " 1. Add deploy user's SSH public key to:"
 echo "    /home/$DEPLOY_USER/.ssh/authorized_keys"
-echo " 2. Import schema:"
+echo " 2. Import base schema:"
 echo "    mysql -u $DB_USER -p $DB_NAME < $DEPLOY_PATH/database.sql"
-echo " 3. Add GitHub secrets (see DEPLOY.md)"
-echo " 4. Push to main branch to trigger deploy"
-echo " 5. Optional: certbot --nginx -d $DOMAIN"
+echo " 3. Install dependencies and apply the rest of the schema:"
+echo "    cd $DEPLOY_PATH && composer install --no-dev --optimize-autoloader && php migrate.php"
+echo " 4. Add GitHub secrets (see DEPLOY.md)"
+echo " 5. Push to main branch to trigger deploy"
+echo " 6. Optional: certbot --nginx -d $DOMAIN"
 echo "=============================================="

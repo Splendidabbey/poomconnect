@@ -16,6 +16,8 @@ $bodyClass = 'dashboard-page';
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     if (!save_coupon((int) $org['id'], $_POST)) {
         $errors[] = __('validation.coupon_exists');
     } else {
@@ -40,6 +42,7 @@ echo render_flash();
         <div class="card form-card-wide" style="margin-bottom:1.5rem;">
             <?php foreach ($errors as $error): ?><div class="alert alert-error"><?= e($error) ?></div><?php endforeach; ?>
             <form method="post" class="form-inline-row">
+                <?= csrf_field() ?>
                 <div class="form-group"><label><?php _e('organizer.coupon_code'); ?></label><input name="code" class="input" required></div>
                 <div class="form-group"><label><?php _e('organizer.discount_type'); ?></label><select name="discount_type" class="select"><option value="percent">%</option><option value="fixed">THB</option></select></div>
                 <div class="form-group"><label><?php _e('organizer.discount_value'); ?></label><input name="discount_value" type="number" class="input" required min="1"></div>

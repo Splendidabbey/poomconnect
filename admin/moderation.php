@@ -9,6 +9,8 @@ $pageTitle = __('admin.moderation');
 $reports = pending_reports();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['report_id'], $_POST['status'])) {
+    csrf_verify_or_redirect();
+
     update_report_status((int) $_POST['report_id'], (string) $_POST['status'], (int) current_user()['id']);
     if ($_POST['status'] === 'actioned' && !empty($_POST['verify_user'])) {
         verify_user((int) $_POST['reported_id']);
@@ -31,6 +33,7 @@ echo render_flash();
                     <p><strong><?= e($r['reporter_name']) ?></strong> → <?= e($r['reported_name']) ?></p>
                     <p><?= e(__('safety.reason_' . $r['reason'])) ?> — <?= e($r['details'] ?? '') ?></p>
                     <form method="post" class="form-row">
+                        <?= csrf_field() ?>
                         <input type="hidden" name="report_id" value="<?= (int) $r['id'] ?>">
                         <input type="hidden" name="reported_id" value="<?= (int) $r['reported_id'] ?>">
                         <select name="status" class="select"><option value="reviewed"><?php _e('admin.reviewed'); ?></option><option value="dismissed"><?php _e('admin.dismissed'); ?></option><option value="actioned"><?php _e('admin.actioned'); ?></option></select>

@@ -41,6 +41,8 @@ if ($event) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $event) {
+    csrf_verify_or_redirect();
+
     if (isset($_POST['manual_checkin_user'])) {
         manual_checkin_participant($eventId, (int) $_POST['manual_checkin_user']);
         set_flash('success', __('organizer.manual_checkin_done'));
@@ -97,6 +99,7 @@ echo render_flash();
             <div class="card" style="margin-bottom:1.5rem;">
                 <h3 style="margin-bottom:1rem;"><?php _e('organizer.check_in'); ?></h3>
                 <form method="post" class="form-row">
+                    <?= csrf_field() ?>
                     <div class="form-group" style="margin:0;">
                         <label for="qr_token"><?php _e('organizer.scan_qr'); ?></label>
                         <input type="text" id="qr_token" name="qr_token" class="input" placeholder="<?= e(__('organizer.qr_placeholder')) ?>">
@@ -130,7 +133,7 @@ echo render_flash();
                                         <td><?= (int) $p['checked_in'] ? '<span class="badge badge-success">' . e(__('ticket_page.checked_in')) . '</span>' : '<span class="badge badge-purple">' . e(__('ticket_page.not_checked_in')) . '</span>' ?></td>
                                         <td class="table-actions">
                                             <?php if ((int) !$p['checked_in'] && $p['payment_status'] === 'approved'): ?>
-                                                <form method="post"><input type="hidden" name="manual_checkin_user" value="<?= (int) $p['user_id'] ?>"><button type="submit" class="btn btn-outline btn-sm"><?php _e('organizer.manual_checkin'); ?></button></form>
+                                                <form method="post"><?= csrf_field() ?><input type="hidden" name="manual_checkin_user" value="<?= (int) $p['user_id'] ?>"><button type="submit" class="btn btn-outline btn-sm"><?php _e('organizer.manual_checkin'); ?></button></form>
                                             <?php endif; ?>
                                         </td>
                                     </tr>

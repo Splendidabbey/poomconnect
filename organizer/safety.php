@@ -13,6 +13,8 @@ if (!$org) {
 $pageTitle = __('safety.organizer_title');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     set_org_safe_badge((int) $org['id'], !empty($_POST['safe_badge']));
     set_flash('success', __('flash.settings_saved'));
     redirect(base_url('organizer/safety.php'));
@@ -30,6 +32,7 @@ echo render_flash();
         <div class="dashboard-header"><h1><?php _e('safety.organizer_title'); ?></h1></div>
         <div class="card" style="max-width:640px;">
             <form method="post">
+                <?= csrf_field() ?>
                 <label class="checkbox-label">
                     <input type="checkbox" name="safe_badge" value="1" <?= !empty($org['safe_event_badge']) ? 'checked' : '' ?>>
                     <?php _e('safety.enable_badge'); ?>

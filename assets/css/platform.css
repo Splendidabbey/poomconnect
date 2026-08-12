@@ -103,21 +103,53 @@
 
 .payment-flow-steps {
     display: flex;
-    gap: 0.35rem;
-    flex-wrap: wrap;
-    margin-top: 1rem;
+    align-items: center;
+    margin-top: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
 }
 
 .flow-step {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.6rem;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
     color: var(--text-soft);
+    white-space: nowrap;
 }
 
-.flow-step.is-active { background: rgba(108, 53, 255, 0.3); color: var(--text); }
-.flow-step.is-done { background: rgba(46, 204, 113, 0.2); color: #6ee7a0; }
+.flow-step::before {
+    content: attr(data-step);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+}
+
+.flow-step:not(:last-child)::after {
+    content: '';
+    width: 22px;
+    height: 2px;
+    flex-shrink: 0;
+    background: var(--border);
+    margin: 0 0.4rem;
+}
+
+.flow-step.is-active { color: var(--text); }
+.flow-step.is-active::before { background: var(--gradient); border-color: transparent; color: #fff; }
+
+.flow-step.is-done { color: var(--text-muted); }
+.flow-step.is-done::before { background: rgba(34, 197, 94, 0.18); border-color: rgba(34, 197, 94, 0.4); color: #86efac; }
+.flow-step.is-done:not(:last-child)::after { background: rgba(34, 197, 94, 0.4); }
 
 .promptpay-qr-block { text-align: center; margin: 1.5rem 0; }
 

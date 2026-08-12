@@ -9,6 +9,8 @@ $userId = (int) current_user()['id'];
 $pageTitle = __('safety.report_title');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     $reportedId = (int) ($_POST['reported_id'] ?? 0);
     $reason = $_POST['reason'] ?? 'other';
     $details = trim($_POST['details'] ?? '');
@@ -26,6 +28,7 @@ echo render_flash();
 <section class="page-header"><div class="container"><h1><?php _e('safety.report_title'); ?></h1></div></section>
 <section class="section content-section"><div class="container" style="max-width:560px;">
     <form method="post" class="card">
+        <?= csrf_field() ?>
         <div class="form-group"><label><?php _e('safety.reported_user_id'); ?></label><input class="input" name="reported_id" type="number" required placeholder="User ID"></div>
         <div class="form-group"><label><?php _e('safety.reason'); ?></label>
             <select name="reason" class="select"><?php foreach (safety_report_reasons() as $r): ?><option value="<?= e($r) ?>"><?= e(__('safety.reason_' . $r)) ?></option><?php endforeach; ?></select>

@@ -13,6 +13,8 @@ $errors = [];
 $success = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     if (($_POST['form'] ?? '') === 'safety') {
         save_emergency_contact($userId, trim($_POST['emergency_contact_name'] ?? ''), trim($_POST['emergency_contact_phone'] ?? ''));
         set_flash('success', __('safety.emergency_saved'));
@@ -100,6 +102,7 @@ echo render_flash();
         <div class="card form-card-wide">
             <h2><?php _e('safety.emergency_contact'); ?></h2>
             <form method="post">
+                <?= csrf_field() ?>
                 <input type="hidden" name="form" value="safety">
                 <div class="form-group"><label><?php _e('safety.contact_name'); ?></label><input class="input" name="emergency_contact_name" value="<?= e($profile['emergency_contact_name'] ?? '') ?>"></div>
                 <div class="form-group"><label><?php _e('safety.contact_phone'); ?></label><input class="input" name="emergency_contact_phone" value="<?= e($profile['emergency_contact_phone'] ?? '') ?>"></div>
@@ -113,6 +116,7 @@ echo render_flash();
             <p class="form-help"><?php _e('profile.compatibility_sub'); ?></p>
             <p class="form-help ai-policy-note"><?php _e('ai_policy.compatibility_note'); ?></p>
             <form method="post">
+                <?= csrf_field() ?>
                 <input type="hidden" name="form" value="compatibility">
                 <div class="form-group">
                     <label><?php _e('profile.interests'); ?></label>
@@ -167,6 +171,7 @@ echo render_flash();
         </div>
         <?php else: ?>
         <form method="post" enctype="multipart/form-data" class="card form-card-wide">
+            <?= csrf_field() ?>
             <div class="form-row">
                 <div class="form-group">
                     <label><?php _e('profile.avatar'); ?></label>
@@ -245,7 +250,7 @@ echo render_flash();
                 </div>
             </div>
 
-            <?php if ($tab === 'privacy' || true): ?>
+            <?php if ($tab === 'privacy'): ?>
             <div class="form-section">
                 <h3 class="form-section-title"><?php _e('profile.tab_privacy'); ?></h3>
                 <?php $privacy = $profile['privacy_settings'] ?? default_privacy_settings(); ?>

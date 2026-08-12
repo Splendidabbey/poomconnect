@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/_bootstrap.php';
+csrf_verify_or_json();
 require_api_organizer();
 
 $paymentId = (int) ($_POST['payment_id'] ?? 0);

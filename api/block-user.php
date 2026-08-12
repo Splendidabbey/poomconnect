@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/api/_bootstrap.php';
+csrf_verify_or_json();
 require_login(['participant', 'organizer']);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

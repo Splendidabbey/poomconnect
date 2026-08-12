@@ -10,6 +10,8 @@ $pageTitle = __('my_events.title');
 $registrations = get_user_registrations($userId);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_event_id'])) {
+    csrf_verify_or_redirect();
+
     $eventId = (int) $_POST['cancel_event_id'];
     if (cancel_event_registration($eventId, $userId)) {
         set_flash('success', __('my_events.cancelled'));
@@ -60,6 +62,7 @@ echo render_flash();
                             <?php endif; ?>
                             <?php if ($reg['registration_status'] !== 'cancelled'): ?>
                                 <form method="post" onsubmit="return confirm(<?= json_encode(__('my_events.cancel_confirm')) ?>);">
+                                    <?= csrf_field() ?>
                                     <input type="hidden" name="cancel_event_id" value="<?= (int) $reg['event_id'] ?>">
                                     <button type="submit" class="btn btn-outline btn-sm"><?php _e('my_events.cancel'); ?></button>
                                 </form>

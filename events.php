@@ -113,7 +113,7 @@ echo render_flash();
                     $cover = $event['cover_image'] ? upload_url($event['cover_image']) : default_event_image();
                     $spots = get_spots_left($event);
                     ?>
-                    <article class="event-card card">
+                    <article class="event-card card card-interactive">
                         <a href="<?= e(event_url($event)) ?>" class="event-card-link">
                             <img src="<?= e($cover) ?>" alt="<?= e($event['title']) ?>" class="event-card-image">
                             <div class="event-card-body">
@@ -125,9 +125,9 @@ echo render_flash();
                                 </div>
                                 <h3 class="event-card-title"><?= e($event['title']) ?></h3>
                                 <div class="event-card-meta">
-                                    <span>📅 <?= e(format_date($event['event_date'])) ?> · <?= e(format_time($event['start_time'])) ?></span>
-                                    <span>📍 <?= e($event['city'] ?: ($event['location'] ?? __('common.tba'))) ?></span>
-                                    <span>🏢 <?= e($event['organization_name']) ?></span>
+                                    <span><svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><?= e(format_date($event['event_date'])) ?> · <?= e(format_time($event['start_time'])) ?></span>
+                                    <span><svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 21s-6-5.686-6-10a6 6 0 0 1 12 0c0 4.314-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg><?= e($event['city'] ?: ($event['location'] ?? __('common.tba'))) ?></span>
+                                    <span><svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg><?= e($event['organization_name']) ?></span>
                                 </div>
                                 <div class="event-card-footer">
                                     <span class="badge badge-<?= $spots > 0 ? 'success' : 'danger' ?>"><?= e(spots_left_label($spots)) ?></span>

@@ -15,6 +15,8 @@ $pageTitle = __('tenant.branding_title');
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     $data = [
         'name' => trim($_POST['name'] ?? ''),
         'primary_color' => trim($_POST['primary_color'] ?? '#6C35FF'),
@@ -61,6 +63,7 @@ echo render_flash();
         <div class="dashboard-header"><h1><?php _e('tenant.branding_title'); ?></h1><p><?php _e('tenant.branding_sub'); ?></p></div>
         <div class="card" style="max-width:720px;">
             <form method="post" enctype="multipart/form-data">
+                <?= csrf_field() ?>
                 <div class="form-group"><label><?php _e('organizer.org_name'); ?></label><input class="input" name="name" required value="<?= e($org['name']) ?>"></div>
                 <div class="form-group"><label>Logo</label>
                     <?php if (!empty($org['logo'])): ?><img src="<?= e(upload_url($org['logo'])) ?>" style="max-width:80px;display:block;margin-bottom:0.5rem;"><?php endif; ?>

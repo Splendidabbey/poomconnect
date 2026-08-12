@@ -19,6 +19,8 @@ $partner = get_user_profile($partnerId);
 $event = get_event_by_id((int) $room['event_id']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     $body = trim($_POST['body'] ?? '');
     $imagePath = null;
     if (isset($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE) {
@@ -59,6 +61,7 @@ require_once APP_ROOT . '/includes/header.php';
         </div>
 
         <form method="post" enctype="multipart/form-data" class="card chat-compose">
+            <?= csrf_field() ?>
             <input type="hidden" name="room" value="<?= $roomId ?>">
             <textarea name="body" class="textarea" rows="2" placeholder="<?= e(__('chat.placeholder')) ?>"></textarea>
             <div class="chat-compose-actions">

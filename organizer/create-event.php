@@ -24,6 +24,8 @@ if (!empty($_GET['template_id'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     $data = parse_event_builder_data($_POST);
 
     if ($data['title'] === '') {
@@ -96,6 +98,7 @@ echo render_flash();
                 <div class="alert alert-error"><?php _e('flash.no_organization'); ?></div>
             <?php else: ?>
                 <form method="post" enctype="multipart/form-data" data-loading>
+                    <?= csrf_field() ?>
                     <?php require APP_ROOT . '/includes/event-form-fields.php'; ?>
                     <button type="submit" class="btn btn-primary btn-lg"><?php _e('organizer.create_btn'); ?></button>
                 </form>

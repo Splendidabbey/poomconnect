@@ -13,9 +13,9 @@ $pageTitle = __('admin.dashboard');
 $bodyClass = 'dashboard-page admin-page';
 $hideNav = true;
 
-$revenueChart = admin_chart_points(array_values($data['revenue_by_day']));
-$registrationChart = admin_chart_points(array_values($data['registrations_by_day']));
 $chartLabels = array_map(static fn(string $date): string => date('D', strtotime($date)), array_keys($data['revenue_by_day']));
+$revenueValues = array_values($data['revenue_by_day']);
+$registrationValues = array_values($data['registrations_by_day']);
 
 $totalEventStatus = array_sum($data['event_statuses']) ?: 1;
 $statusOrder = ['live', 'published', 'draft', 'paused', 'completed', 'cancelled'];
@@ -34,7 +34,7 @@ echo render_flash();
                 <p><?php _e('admin.platform_overview'); ?> · <?= e(format_date(date('Y-m-d'))) ?></p>
             </div>
             <div class="admin-hero-actions">
-                <a href="<?= base_url('admin/payments.php') ?>" class="btn btn-primary btn-sm"><?php _e('admin.review_payments'); ?></a>
+                <a href="<?= base_url('admin/payment-settings.php') ?>" class="btn btn-primary btn-sm"><?php _e('admin_payments.settings'); ?></a>
                 <a href="<?= base_url('admin/events.php') ?>" class="btn btn-outline btn-sm"><?php _e('admin.view_all_events'); ?></a>
             </div>
         </section>
@@ -119,21 +119,7 @@ echo render_flash();
                     <span class="admin-kpi-pill"><?php _e('admin.last_7_days'); ?></span>
                 </div>
                 <div class="admin-chart-wrap">
-                    <svg viewBox="0 0 320 130" preserveAspectRatio="none" aria-hidden="true">
-                        <defs>
-                            <linearGradient id="adminRevenueFill" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stop-color="#6C35FF" stop-opacity="0.35"/>
-                                <stop offset="100%" stop-color="#6C35FF" stop-opacity="0"/>
-                            </linearGradient>
-                        </defs>
-                        <path d="<?= e($revenueChart['area']) ?>" fill="url(#adminRevenueFill)"/>
-                        <path d="<?= e($revenueChart['path']) ?>" fill="none" stroke="#FF2D8D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <div class="admin-chart-labels">
-                    <?php foreach ($chartLabels as $label): ?>
-                        <span><?= e($label) ?></span>
-                    <?php endforeach; ?>
+                    <canvas id="admin-revenue-chart" role="img" aria-label="<?php _e('admin.revenue_chart'); ?>"></canvas>
                 </div>
             </section>
 
@@ -143,21 +129,7 @@ echo render_flash();
                     <span class="admin-kpi-pill"><?php _e('admin.last_7_days'); ?></span>
                 </div>
                 <div class="admin-chart-wrap">
-                    <svg viewBox="0 0 320 130" preserveAspectRatio="none" aria-hidden="true">
-                        <defs>
-                            <linearGradient id="adminRegFill" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stop-color="#FF2D8D" stop-opacity="0.28"/>
-                                <stop offset="100%" stop-color="#FF2D8D" stop-opacity="0"/>
-                            </linearGradient>
-                        </defs>
-                        <path d="<?= e($registrationChart['area']) ?>" fill="url(#adminRegFill)"/>
-                        <path d="<?= e($registrationChart['path']) ?>" fill="none" stroke="#6C35FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <div class="admin-chart-labels">
-                    <?php foreach ($chartLabels as $label): ?>
-                        <span><?= e($label) ?></span>
-                    <?php endforeach; ?>
+                    <canvas id="admin-registrations-chart" role="img" aria-label="<?php _e('admin.registrations_chart'); ?>"></canvas>
                 </div>
             </section>
 
@@ -281,5 +253,56 @@ echo render_flash();
         </div>
     </div>
 </div>
+
+<script src="<?= asset_url('js/vendor/chart.umd.min.js') ?>"></script>
+<script>
+(function () {
+    const labels = <?= json_encode($chartLabels) ?>;
+    const gridColor = 'rgba(255, 255, 255, 0.06)';
+    const textColor = 'rgba(255, 255, 255, 0.55)';
+    const baseOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        elements: { point: { radius: 0, hoverRadius: 4 } },
+        scales: {
+            x: { grid: { display: false }, ticks: { color: textColor, font: { size: 11 } } },
+            y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } }, beginAtZero: true },
+        },
+    };
+
+    new Chart(document.getElementById('admin-revenue-chart'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                data: <?= json_encode($revenueValues) ?>,
+                borderColor: '#FF2D8D',
+                backgroundColor: 'rgba(108, 53, 255, 0.25)',
+                fill: true,
+                tension: 0.35,
+                borderWidth: 2.5,
+            }],
+        },
+        options: baseOptions,
+    });
+
+    new Chart(document.getElementById('admin-registrations-chart'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                data: <?= json_encode($registrationValues) ?>,
+                borderColor: '#6C35FF',
+                backgroundColor: 'rgba(255, 45, 141, 0.22)',
+                fill: true,
+                tension: 0.35,
+                borderWidth: 2.5,
+            }],
+        },
+        options: baseOptions,
+    });
+})();
+</script>
 
 <?php require_once APP_ROOT . '/includes/footer.php'; ?>

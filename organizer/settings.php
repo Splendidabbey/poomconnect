@@ -14,6 +14,8 @@ $errors = [];
 $success = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     $name = trim($_POST['name'] ?? '');
     $promptpay = trim($_POST['promptpay_number'] ?? '');
     $bankName = trim($_POST['bank_name'] ?? '');
@@ -77,6 +79,7 @@ echo render_flash();
             <?php endforeach; ?>
 
             <form method="post" enctype="multipart/form-data" data-loading>
+                <?= csrf_field() ?>
                 <div class="form-group">
                     <label for="name"><?php _e('organizer.org_name'); ?> *</label>
                     <input type="text" id="name" name="name" class="input" required value="<?= e($org['name'] ?? '') ?>">

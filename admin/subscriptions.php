@@ -10,6 +10,8 @@ $stats = platform_subscription_stats();
 $plans = get_subscription_plans();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['org_id'], $_POST['plan_slug'])) {
+    csrf_verify_or_redirect();
+
     assign_org_plan((int) $_POST['org_id'], (string) $_POST['plan_slug']);
     log_admin_action((int) current_user()['id'], 'subscription_assigned', 'org=' . (int) $_POST['org_id']);
     set_flash('success', __('subscription.plan_updated'));
@@ -36,6 +38,7 @@ echo render_flash();
         <div class="card" style="margin-top:1.5rem;">
             <h2><?php _e('admin.assign_plan'); ?></h2>
             <form method="post" class="form-row">
+                <?= csrf_field() ?>
                 <select name="org_id" class="select" required><?php foreach ($orgs as $o): ?><option value="<?= (int) $o['id'] ?>"><?= e($o['name']) ?></option><?php endforeach; ?></select>
                 <select name="plan_slug" class="select" required><?php foreach ($plans as $p): ?><option value="<?= e($p['slug']) ?>"><?= e($p['name']) ?></option><?php endforeach; ?></select>
                 <button class="btn btn-primary"><?php _e('common.save'); ?></button>

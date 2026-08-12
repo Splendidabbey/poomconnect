@@ -1,3 +1,47 @@
+/**
+ * Traps Tab/Shift+Tab focus within `container` while `isActive()` returns true,
+ * and returns focus to `returnFocusEl` once the trap is released. Shared by the
+ * main site nav drawer and the admin/organizer dashboard drawer.
+ */
+function createFocusTrap(container, returnFocusEl) {
+    const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    let active = false;
+
+    const handleKeydown = (e) => {
+        if (!active || e.key !== 'Tab') {
+            return;
+        }
+        const focusable = Array.from(container.querySelectorAll(focusableSelector)).filter((el) => el.offsetParent !== null);
+        if (focusable.length === 0) {
+            return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    };
+
+    return {
+        activate() {
+            active = true;
+            document.addEventListener('keydown', handleKeydown);
+            const firstFocusable = container.querySelector(focusableSelector);
+            firstFocusable?.focus();
+        },
+        deactivate() {
+            active = false;
+            document.removeEventListener('keydown', handleKeydown);
+            returnFocusEl?.focus();
+        },
+    };
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const i18n = window.PoomI18n || {};
     const navToggle = document.querySelector('[data-nav-toggle]');
@@ -6,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navbar = document.querySelector('.navbar');
     let drawerHome = null;
     let overlayHome = null;
+    const navFocusTrap = navDrawer && navToggle ? createFocusTrap(navDrawer, navToggle) : null;
 
     const isMobileNav = () => window.innerWidth <= 1024;
 
@@ -61,6 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 details.open = false;
             });
         }
+
+        if (open) {
+            navFocusTrap?.activate();
+        } else {
+            navFocusTrap?.deactivate();
+        }
     };
 
     if (navToggle && navDrawer) {
@@ -91,6 +142,46 @@ document.addEventListener('DOMContentLoaded', () => {
                     setNavOpen(false);
                 }
                 restoreMobileNav();
+            }
+        });
+    }
+
+    const adminToggle = document.querySelector('[data-admin-nav-toggle]');
+    const adminSidebar = document.querySelector('[data-admin-sidebar]');
+    const adminOverlay = document.querySelector('[data-admin-nav-overlay]');
+    if (adminToggle && adminSidebar) {
+        const adminFocusTrap = createFocusTrap(adminSidebar, adminToggle);
+
+        const setAdminNavOpen = (open) => {
+            adminSidebar.classList.toggle('is-open', open);
+            adminToggle.classList.toggle('is-open', open);
+            adminToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (adminOverlay) {
+                adminOverlay.classList.toggle('is-open', open);
+                adminOverlay.hidden = !open;
+            }
+            if (open) {
+                adminFocusTrap.activate();
+            } else {
+                adminFocusTrap.deactivate();
+            }
+        };
+
+        adminToggle.addEventListener('click', () => {
+            setAdminNavOpen(!adminSidebar.classList.contains('is-open'));
+        });
+        adminOverlay?.addEventListener('click', () => setAdminNavOpen(false));
+        adminSidebar.querySelectorAll('a[href]').forEach((link) => {
+            link.addEventListener('click', () => setAdminNavOpen(false));
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && adminSidebar.classList.contains('is-open')) {
+                setAdminNavOpen(false);
+            }
+        });
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 900 && adminSidebar.classList.contains('is-open')) {
+                setAdminNavOpen(false);
             }
         });
     }
@@ -154,6 +245,9 @@ document.addEventListener('DOMContentLoaded', () => {
 async function apiPost(url, data = {}) {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => formData.append(key, value));
+    if (window.PoomCsrfToken) {
+        formData.append('_csrf', window.PoomCsrfToken);
+    }
 
     const response = await fetch(url, {
         method: 'POST',

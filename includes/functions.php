@@ -269,7 +269,7 @@ function register_participant_for_event(int $eventId, int $userId, float $amount
     }
 }
 
-function approve_payment(int $paymentId, int $approvedBy): bool
+function approve_payment(int $paymentId, ?int $approvedBy): bool
 {
     $pdo = db();
 
@@ -766,45 +766,6 @@ function admin_dashboard_data(): array
         'pending_payments' => $pendingPayments,
         'recent_logs' => $recentLogs,
         'top_organizations' => $topOrganizations,
-    ];
-}
-
-function admin_chart_points(array $values, int $width = 320, int $height = 100, int $pad = 8): array
-{
-    $count = count($values);
-    if ($count === 0) {
-        return ['path' => '', 'area' => '', 'points' => []];
-    }
-
-    $max = max($values) ?: 1;
-    $step = $count > 1 ? ($width - $pad * 2) / ($count - 1) : 0;
-    $points = [];
-
-    $i = 0;
-    foreach ($values as $value) {
-        $x = $pad + ($step * $i);
-        $y = $height - $pad - (($value / $max) * ($height - $pad * 2));
-        $points[] = ['x' => round($x, 1), 'y' => round($y, 1)];
-        $i++;
-    }
-
-    $line = [];
-    foreach ($points as $index => $point) {
-        $line[] = ($index === 0 ? 'M' : 'L') . $point['x'] . ',' . $point['y'];
-    }
-
-    $first = $points[0];
-    $last = $points[count($points) - 1];
-    $area = implode(' ', $line)
-        . ' L' . $last['x'] . ',' . ($height - $pad)
-        . ' L' . $first['x'] . ',' . ($height - $pad)
-        . ' Z';
-
-    return [
-        'path' => implode(' ', $line),
-        'area' => $area,
-        'points' => $points,
-        'max' => $max,
     ];
 }
 

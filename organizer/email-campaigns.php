@@ -16,6 +16,8 @@ $bodyClass = 'dashboard-page';
 $orgId = (int) $org['id'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     $action = $_POST['action'] ?? 'create';
 
     if ($action === 'send' && !empty($_POST['campaign_id'])) {
@@ -58,6 +60,7 @@ echo render_flash();
 
         <div class="card form-card-wide" style="margin-bottom:1.5rem;">
             <form method="post">
+                <?= csrf_field() ?>
                 <input type="hidden" name="action" value="create">
                 <div class="form-grid-2">
                     <div class="form-group"><label><?php _e('marketing.campaign_name'); ?></label><input name="name" class="input" required></div>
@@ -110,6 +113,7 @@ echo render_flash();
                                 <td>
                                     <?php if ($c['status'] !== 'sent'): ?>
                                         <form method="post" style="display:inline;">
+                                            <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="send">
                                             <input type="hidden" name="campaign_id" value="<?= (int) $c['id'] ?>">
                                             <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm(<?= json_encode(__('marketing.send_campaign') . '?') ?>)"><?php _e('marketing.send_campaign'); ?></button>

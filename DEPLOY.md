@@ -37,7 +37,12 @@ Import the database (first time only):
 
 ```bash
 mysql -u poomconnect_user -p poomconnect < /var/www/poomconnect/database.sql
+cd /var/www/poomconnect
+composer install --no-dev --optimize-autoloader
+php migrate.php
 ```
+
+`server-setup.sh` already writes a `.env` with a generated `APP_ENCRYPTION_KEY` (used to encrypt payment gateway secrets at rest) — don't regenerate it after gateway credentials have been saved, or they become unreadable.
 
 Visit `https://yourdomain.com/seed.php` once, then delete `seed.php` on the server.
 

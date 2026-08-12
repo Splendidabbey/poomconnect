@@ -23,7 +23,15 @@ echo render_flash();
 <div class="admin-layout">
     <?php require APP_ROOT . '/includes/admin-sidebar.php'; ?>
     <div class="admin-main">
-        <div class="dashboard-header"><h1><?php _e('admin.all_payments'); ?></h1></div>
+        <div class="dashboard-header admin-page-header">
+            <div>
+                <h1><?php _e('admin.all_payments'); ?></h1>
+                <p class="text-muted"><?php _e('admin_payments.transactions_subtitle'); ?></p>
+            </div>
+            <a href="<?= base_url('admin/payment-settings.php') ?>" class="btn btn-outline btn-sm"><?php _e('admin_payments.manage_settings'); ?></a>
+        </div>
+
+        <?php require APP_ROOT . '/includes/admin-payments-nav.php'; ?>
         <div class="card">
             <div class="table-wrap">
                 <table class="table">

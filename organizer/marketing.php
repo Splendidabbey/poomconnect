@@ -16,6 +16,8 @@ $bodyClass = 'dashboard-page';
 $orgId = (int) $org['id'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     db()->prepare('UPDATE organizations SET tiktok_handle = ?, seo_keywords = ? WHERE id = ?')->execute([
         trim($_POST['tiktok_handle'] ?? '') ?: null,
         trim($_POST['seo_keywords'] ?? '') ?: null,
@@ -76,6 +78,7 @@ echo render_flash();
         <div class="card" style="margin-top:1.5rem;">
             <h2><?php _e('marketing.tiktok'); ?></h2>
             <form method="post" class="form-grid-2">
+                <?= csrf_field() ?>
                 <div class="form-group">
                     <label><?php _e('marketing.tiktok_handle'); ?></label>
                     <input class="input" name="tiktok_handle" value="<?= e($org['tiktok_handle'] ?? '') ?>" placeholder="@yourhandle">

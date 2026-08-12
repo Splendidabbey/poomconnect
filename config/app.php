@@ -2,10 +2,17 @@
 
 declare(strict_types=1);
 
+define('APP_ROOT', dirname(__DIR__));
+
+require_once APP_ROOT . '/vendor/autoload.php';
+
+if (is_file(APP_ROOT . '/.env')) {
+    Dotenv\Dotenv::createImmutable(APP_ROOT)->safeLoad();
+}
+
 define('APP_NAME', 'Poom Connect');
 define('APP_TAGLINE', 'Meet. Connect. Belong.');
-define('APP_URL', ''); // e.g. https://yourdomain.com — leave empty for auto-detect
-define('APP_ROOT', dirname(__DIR__));
+define('APP_URL', $_ENV['APP_URL'] ?? ''); // e.g. https://yourdomain.com — leave empty for auto-detect
 define('UPLOAD_MAX_SIZE', 5 * 1024 * 1024); // 5MB
 define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
 define('ALLOWED_IMAGE_EXTENSIONS', ['jpg', 'jpeg', 'png', 'webp']);
@@ -27,6 +34,7 @@ require_once APP_ROOT . '/includes/functions.php';
 require_once APP_ROOT . '/includes/content.php';
 require_once APP_ROOT . '/includes/platform.php';
 require_once APP_ROOT . '/includes/promptpay.php';
+require_once APP_ROOT . '/includes/stripe.php';
 require_once APP_ROOT . '/includes/realtime.php';
 require_once APP_ROOT . '/includes/roles.php';
 require_once APP_ROOT . '/includes/tenant.php';
@@ -38,25 +46,15 @@ require_once APP_ROOT . '/includes/templates.php';
 require_once APP_ROOT . '/includes/ai_policy.php';
 require_once APP_ROOT . '/includes/admin-platform.php';
 require_once APP_ROOT . '/includes/admin-users.php';
+require_once APP_ROOT . '/includes/payment-settings.php';
 require_once APP_ROOT . '/includes/marketing.php';
 require_once APP_ROOT . '/includes/social-share.php';
 require_once APP_ROOT . '/includes/auth.php';
+require_once APP_ROOT . '/includes/security.php';
 
-ensure_content_schema();
-ensure_platform_schema();
-ensure_realtime_schema();
-ensure_roles_schema();
-ensure_tenant_schema();
-ensure_subscription_schema();
-ensure_safety_schema();
-ensure_community_schema();
-ensure_marketplace_schema();
-ensure_templates_schema();
-ensure_ai_policy_schema();
-ensure_admin_platform_schema();
-ensure_admin_users_schema();
-ensure_localization_schema();
-ensure_marketing_schema();
+// Schema is no longer created/altered on every request — see migrate.php.
+// Run `php migrate.php` after pulling changes that add new ensure_*_schema()
+// logic or files under migrations/.
 
 resolve_tenant_from_request();
 

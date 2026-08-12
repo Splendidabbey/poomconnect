@@ -22,6 +22,8 @@ $eventsList = $eventsList->fetchAll();
 $waitlist = $eventId ? get_event_waitlist($eventId) : [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['promote_event_id'])) {
+    csrf_verify_or_redirect();
+
     promote_waitlist((int) $_POST['promote_event_id']);
     set_flash('success', __('organizer.waitlist_promoted'));
     redirect(base_url('organizer/waitlist.php?event_id=' . (int) $_POST['promote_event_id']));
@@ -56,7 +58,7 @@ echo render_flash();
                         <?php endforeach; ?>
                     </tbody>
                 </table>
-                <form method="post" style="margin-top:1rem;"><input type="hidden" name="promote_event_id" value="<?= $eventId ?>"><button class="btn btn-primary btn-sm"><?php _e('organizer.promote_next'); ?></button></form>
+                <form method="post" style="margin-top:1rem;"><?= csrf_field() ?><input type="hidden" name="promote_event_id" value="<?= $eventId ?>"><button class="btn btn-primary btn-sm"><?php _e('organizer.promote_next'); ?></button></form>
             <?php else: ?>
                 <p><?php _e('organizer.no_waitlist'); ?></p>
             <?php endif; ?>

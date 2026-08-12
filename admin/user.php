@@ -22,6 +22,8 @@ $access = get_user_access_profile($userId);
 $roleOptions = assignable_user_roles();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     $_POST['user_id'] = (string) $userId;
     $result = handle_admin_user_action($_POST, (int) current_user()['id']);
 
@@ -67,6 +69,7 @@ echo render_flash();
                 <?php if ($canManage): ?>
                     <div class="admin-control-stack">
                         <form method="post" class="admin-control-form" onsubmit="return confirm(<?= json_encode(user_is_active($user) ? __('admin_users.confirm_deactivate') : __('admin_users.confirm_activate')) ?>)">
+                            <?= csrf_field() ?>
                             <input type="hidden" name="user_id" value="<?= $userId ?>">
                             <button type="submit" name="action" value="<?= user_is_active($user) ? 'deactivate' : 'activate' ?>" class="btn btn-outline">
                                 <?= e(user_is_active($user) ? __('admin_users.deactivate') : __('admin_users.activate')) ?>
@@ -74,6 +77,7 @@ echo render_flash();
                         </form>
 
                         <form method="post" class="admin-control-form">
+                            <?= csrf_field() ?>
                             <input type="hidden" name="user_id" value="<?= $userId ?>">
                             <button type="submit" name="action" value="<?= !empty($user['verified_at']) ? 'unverify' : 'verify' ?>" class="btn btn-outline">
                                 <?= e(!empty($user['verified_at']) ? __('admin_users.unverify') : __('admin_users.verify_user')) ?>
@@ -81,6 +85,7 @@ echo render_flash();
                         </form>
 
                         <form method="post" class="admin-control-form">
+                            <?= csrf_field() ?>
                             <input type="hidden" name="user_id" value="<?= $userId ?>">
                             <button type="submit" name="action" value="toggle_vip" class="btn btn-outline">
                                 <?= e(!empty($user['is_vip']) ? __('admin_users.remove_vip') : __('admin_users.make_vip')) ?>
@@ -89,6 +94,7 @@ echo render_flash();
 
                         <?php if ($canManage): ?>
                             <form method="post" class="admin-control-form admin-role-form">
+                                <?= csrf_field() ?>
                                 <input type="hidden" name="user_id" value="<?= $userId ?>">
                                 <label><?php _e('admin_users.change_role'); ?></label>
                                 <div class="form-inline-row">
@@ -104,8 +110,9 @@ echo render_flash();
 
                         <?php if ($canDelete): ?>
                             <form method="post" class="admin-control-form admin-delete-form" onsubmit="return confirm(<?= json_encode(__('admin_users.confirm_delete')) ?>)">
+                                <?= csrf_field() ?>
                                 <input type="hidden" name="user_id" value="<?= $userId ?>">
-                                <button type="submit" name="action" value="delete" class="btn btn-outline btn-danger"><?php _e('admin_users.delete_user'); ?></button>
+                                <button type="submit" name="action" value="delete" class="btn btn-danger"><?php _e('admin_users.delete_user'); ?></button>
                             </form>
                         <?php endif; ?>
                     </div>
@@ -144,6 +151,7 @@ echo render_flash();
                 <div class="card admin-user-grid-full">
                     <h2><?php _e('admin_users.admin_notes'); ?></h2>
                     <form method="post">
+                        <?= csrf_field() ?>
                         <input type="hidden" name="user_id" value="<?= $userId ?>">
                         <textarea name="admin_notes" class="input" rows="4" placeholder="<?= e(__('admin_users.notes_placeholder')) ?>"><?= e($user['admin_notes'] ?? '') ?></textarea>
                         <button type="submit" name="action" value="save_notes" class="btn btn-primary btn-sm" style="margin-top:0.75rem;"><?php _e('common.save'); ?></button>

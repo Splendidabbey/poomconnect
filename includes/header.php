@@ -20,6 +20,8 @@ if (!isset($pageMeta)) {
 
 $isLanding = str_contains($bodyClass, 'page-landing');
 $isAdminPage = str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/admin/');
+$isOrganizerPage = str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/organizer/');
+$isDashboardPage = $isAdminPage || $isOrganizerPage;
 $currentPath = basename($_SERVER['SCRIPT_NAME'] ?? 'index.php');
 $currentLocale = current_locale();
 $contentPages = ['events.php', 'event.php', 'blog.php', 'article.php', 'profile.php', 'my-events.php', 'signup.php', 'register.php', 'pay.php', 'ticket.php'];
@@ -65,7 +67,7 @@ $brandLogoNav = $tenantOrg && !empty($tenantOrg['logo']) ? org_logo_url($tenantO
     <?php if ($isLanding): ?>
     <link rel="stylesheet" href="<?= asset_url('css/landing.css') ?>">
     <?php endif; ?>
-    <?php if ($isAdminPage): ?>
+    <?php if ($isDashboardPage): ?>
     <link rel="stylesheet" href="<?= asset_url('css/admin.css') ?>">
     <?php endif; ?>
     <?php if ($loadContentCss): ?>
@@ -79,6 +81,7 @@ $brandLogoNav = $tenantOrg && !empty($tenantOrg['logo']) ? org_logo_url($tenantO
     <?php endif; ?>
 </head>
 <body class="<?= e($bodyClass) ?><?= locale_font_class() ? ' ' . e(locale_font_class()) : '' ?><?= $tenantOrg ? ' tenant-branded' : '' ?>">
+<a href="#main" class="skip-link"><?= e(__('nav.skip_to_content')) ?></a>
 <?php if (!$hideNav): ?>
 <header class="navbar<?= $isLanding ? ' navbar-landing' : '' ?>">
     <div class="container navbar-layout<?= $isLanding ? ' navbar-layout-landing' : '' ?>">
@@ -140,7 +143,7 @@ $brandLogoNav = $tenantOrg && !empty($tenantOrg['logo']) ? org_logo_url($tenantO
         </div>
 
         <div class="nav-mobile-drawer" id="nav-mobile-drawer" data-nav-drawer>
-            <nav class="nav-links" data-nav-menu>
+            <nav class="nav-links" data-nav-menu aria-label="<?= e(__('nav.main_navigation')) ?>">
                 <a href="<?= base_url('events.php') ?>" class="<?= $currentPath === 'events.php' ? 'active' : '' ?>"><?php _e('nav.events'); ?></a>
                 <a href="<?= base_url('blog.php') ?>" class="<?= in_array($currentPath, ['blog.php', 'article.php'], true) ? 'active' : '' ?>"><?php _e('nav.blog'); ?></a>
                 <a href="<?= base_url('index.php#how-it-works') ?>"><?php _e('nav.how_it_works'); ?></a>
@@ -180,4 +183,4 @@ $brandLogoNav = $tenantOrg && !empty($tenantOrg['logo']) ? org_logo_url($tenantO
     <div class="nav-overlay" data-nav-overlay hidden></div>
 </header>
 <?php endif; ?>
-<main class="main-content">
+<main class="main-content" id="main">

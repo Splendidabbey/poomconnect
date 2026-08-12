@@ -1,5 +1,13 @@
 -- Poom Connect Database Schema
 -- Import this file before running seed.php
+--
+-- NOTE: this file is a snapshot for bootstrapping a brand-new database and is not
+-- kept in perfect sync with every table (several tables, e.g. payment_gateways and
+-- platform_payment_settings, are created by includes/*.php's ensure_*_schema()
+-- functions instead). As of this upgrade, schema changes are applied via
+-- `php migrate.php` (see migrations/ and migrate.php), which tracks what has been
+-- applied in the schema_migrations table. Prefer running migrate.php over relying
+-- on this file for anything beyond a fresh install.
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -40,6 +48,8 @@ DROP TABLE IF EXISTS live_event_state;
 DROP TABLE IF EXISTS matches;
 DROP TABLE IF EXISTS match_votes;
 DROP TABLE IF EXISTS rounds;
+DROP TABLE IF EXISTS platform_payment_settings;
+DROP TABLE IF EXISTS payment_gateways;
 DROP TABLE IF EXISTS tickets;
 DROP TABLE IF EXISTS payments;
 DROP TABLE IF EXISTS event_participants;
@@ -272,6 +282,7 @@ CREATE TABLE payments (
     discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     original_amount DECIMAL(10,2) NULL,
     payment_method VARCHAR(50) DEFAULT 'promptpay',
+    gateway_reference VARCHAR(191) NULL,
     payment_status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
     slip_image VARCHAR(255) DEFAULT NULL,
     approved_by INT UNSIGNED DEFAULT NULL,
@@ -279,7 +290,28 @@ CREATE TABLE payments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL
+    FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
+    UNIQUE INDEX idx_payments_gateway_reference (gateway_reference)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE payment_gateways (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(40) NOT NULL UNIQUE,
+    name VARCHAR(80) NOT NULL,
+    gateway_type ENUM('manual','gateway') NOT NULL DEFAULT 'manual',
+    is_enabled TINYINT(1) NOT NULL DEFAULT 0,
+    is_default TINYINT(1) NOT NULL DEFAULT 0,
+    mode ENUM('sandbox','live') NOT NULL DEFAULT 'sandbox',
+    config JSON NULL,
+    sort_order INT UNSIGNED NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE platform_payment_settings (
+    setting_key VARCHAR(80) PRIMARY KEY,
+    setting_value TEXT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE tickets (
@@ -705,6 +737,28 @@ CREATE TABLE social_share_logs (
     channel VARCHAR(30) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_share_entity (entity_type, entity_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE schema_migrations (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    migration VARCHAR(191) NOT NULL UNIQUE,
+    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE payment_webhook_events (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    gateway VARCHAR(40) NOT NULL,
+    event_id VARCHAR(191) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE INDEX idx_webhook_event (gateway, event_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE rate_limit_hits (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    bucket VARCHAR(40) NOT NULL,
+    rate_key VARCHAR(191) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_rate_limit_lookup (bucket, rate_key, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

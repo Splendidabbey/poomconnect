@@ -17,6 +17,8 @@ $bodyClass = 'dashboard-page';
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     $data = parse_blog_form_data($_POST);
 
     if ($data['title'] === '') {
@@ -56,6 +58,7 @@ echo render_flash();
                 <div class="alert alert-error"><?= e($error) ?></div>
             <?php endforeach; ?>
             <form method="post" enctype="multipart/form-data" data-loading>
+                <?= csrf_field() ?>
                 <?php require APP_ROOT . '/includes/blog-form-fields.php'; ?>
                 <button type="submit" class="btn btn-primary btn-lg"><?php _e('common.save'); ?></button>
             </form>

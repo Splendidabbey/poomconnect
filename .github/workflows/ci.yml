@@ -27,6 +27,55 @@ jobs:
             -print0 | xargs -0 -I{} php -l {}
           echo "All PHP files passed syntax check."
 
+  tests:
+    name: PHPUnit
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: poomconnect
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: sodium, pdo_mysql
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Configure environment
+        run: |
+          cat > .env <<EOF
+          APP_URL=
+          APP_ENV=testing
+          DB_HOST=127.0.0.1
+          DB_NAME=poomconnect
+          DB_USER=root
+          DB_PASS=
+          DB_CHARSET=utf8mb4
+          APP_ENCRYPTION_KEY=$(php -r 'echo base64_encode(random_bytes(32));')
+          EOF
+
+      - name: Run database migrations
+        run: php migrate.php
+
+      - name: Run PHPUnit
+        run: composer test
+
   validate-structure:
     name: Validate project structure
     runs-on: ubuntu-latest

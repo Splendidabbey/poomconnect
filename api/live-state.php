@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/_bootstrap.php';
+csrf_verify_or_json();
 
 $eventId = (int) ($_GET['event_id'] ?? 0);
 $userId = (int) ($_SESSION['participant_user_id'] ?? current_user_id() ?? 0);

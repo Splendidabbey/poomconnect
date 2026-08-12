@@ -30,38 +30,75 @@ require_once APP_ROOT . '/includes/header.php';
 echo render_flash();
 ?>
 
-<div class="dashboard-layout">
+<div class="admin-layout has-navbar">
     <?php require APP_ROOT . '/includes/organizer-sidebar.php'; ?>
-    <div class="dashboard-main">
-        <div class="dashboard-header">
+    <div class="admin-main">
+        <section class="admin-hero">
             <div>
                 <h1><?php _e('sidebar.dashboard'); ?></h1>
                 <p><?= e(__('organizer.welcome_back', ['name' => $user['full_name']])) ?></p>
             </div>
-            <a href="<?= base_url('organizer/create-event.php') ?>" class="btn btn-primary"><?php _e('organizer.create_event'); ?></a>
-        </div>
+            <div class="admin-hero-actions">
+                <a href="<?= base_url('organizer/create-event.php') ?>" class="btn btn-primary btn-sm"><?php _e('organizer.create_event'); ?></a>
+            </div>
+        </section>
 
-        <div class="dashboard-grid">
-            <div class="stat-card card">
-                <div class="stat-card-label"><?php _e('organizer.total_events'); ?></div>
-                <div class="stat-card-value"><?= $stats['total_events'] ?></div>
-            </div>
-            <div class="stat-card card">
-                <div class="stat-card-label"><?php _e('organizer.total_participants'); ?></div>
-                <div class="stat-card-value"><?= $stats['total_participants'] ?></div>
-            </div>
-            <div class="stat-card card">
-                <div class="stat-card-label"><?php _e('organizer.pending_payments'); ?></div>
-                <div class="stat-card-value gradient-text"><?= $stats['pending_payments'] ?></div>
-            </div>
-            <div class="stat-card card">
-                <div class="stat-card-label"><?php _e('organizer.total_revenue'); ?></div>
-                <div class="stat-card-value" style="font-size:1.5rem;"><?= e(format_currency($stats['total_revenue'])) ?></div>
-            </div>
-            <div class="stat-card card">
-                <div class="stat-card-label"><?php _e('organizer.matches_made'); ?></div>
-                <div class="stat-card-value"><?= $stats['matches_made'] ?></div>
-            </div>
+        <div class="admin-kpi-grid">
+            <article class="admin-kpi-card">
+                <div class="admin-kpi-top">
+                    <div>
+                        <div class="admin-kpi-label"><?php _e('organizer.total_events'); ?></div>
+                        <div class="admin-kpi-value"><?= number_format($stats['total_events']) ?></div>
+                    </div>
+                    <div class="admin-kpi-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </div>
+                </div>
+            </article>
+            <article class="admin-kpi-card">
+                <div class="admin-kpi-top">
+                    <div>
+                        <div class="admin-kpi-label"><?php _e('organizer.total_participants'); ?></div>
+                        <div class="admin-kpi-value"><?= number_format($stats['total_participants']) ?></div>
+                    </div>
+                    <div class="admin-kpi-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="8" r="4"/><path d="M4 20v-1a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v1"/></svg>
+                    </div>
+                </div>
+            </article>
+            <article class="admin-kpi-card is-warning">
+                <div class="admin-kpi-top">
+                    <div>
+                        <div class="admin-kpi-label"><?php _e('organizer.pending_payments'); ?></div>
+                        <div class="admin-kpi-value"><?= number_format($stats['pending_payments']) ?></div>
+                    </div>
+                    <div class="admin-kpi-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                    </div>
+                </div>
+            </article>
+            <article class="admin-kpi-card is-revenue">
+                <div class="admin-kpi-top">
+                    <div>
+                        <div class="admin-kpi-label"><?php _e('organizer.total_revenue'); ?></div>
+                        <div class="admin-kpi-value is-currency"><?= e(format_currency($stats['total_revenue'])) ?></div>
+                    </div>
+                    <div class="admin-kpi-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </div>
+                </div>
+            </article>
+            <article class="admin-kpi-card is-success">
+                <div class="admin-kpi-top">
+                    <div>
+                        <div class="admin-kpi-label"><?php _e('organizer.matches_made'); ?></div>
+                        <div class="admin-kpi-value"><?= number_format($stats['matches_made']) ?></div>
+                    </div>
+                    <div class="admin-kpi-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5A5 5 0 0 1 12 8a5 5 0 0 1 5.5-3C21 5 23.5 8.5 21.5 12.5 19 16.65 12 21 12 21z"/></svg>
+                    </div>
+                </div>
+            </article>
         </div>
 
         <?php if ($orgId): ?>
@@ -72,10 +109,10 @@ echo render_flash();
             $recentEvents->execute([$orgId]);
             $events = $recentEvents->fetchAll();
             ?>
-            <div class="card">
-                <div class="dashboard-header" style="margin-bottom:1rem;">
+            <section class="admin-panel">
+                <div class="admin-panel-header">
                     <h3><?php _e('organizer.recent_events'); ?></h3>
-                    <a href="<?= base_url('organizer/events.php') ?>" class="btn btn-outline btn-sm"><?php _e('common.view_all'); ?></a>
+                    <a href="<?= base_url('organizer/events.php') ?>"><?php _e('common.view_all'); ?></a>
                 </div>
                 <?php if ($events): ?>
                     <div class="table-wrap">
@@ -104,11 +141,9 @@ echo render_flash();
                         </table>
                     </div>
                 <?php else: ?>
-                    <div class="empty-state">
-                        <p><?php _e('organizer.no_events'); ?></p>
-                    </div>
+                    <div class="admin-empty"><?php _e('organizer.no_events'); ?></div>
                 <?php endif; ?>
-            </div>
+            </section>
         <?php endif; ?>
     </div>
 </div>

@@ -19,6 +19,8 @@ $bodyClass = 'dashboard-page';
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     $data = parse_event_builder_data($_POST);
     $coverPath = $event['cover_image'];
     $ogImagePath = $event['og_image'] ?? null;
@@ -85,6 +87,7 @@ echo render_flash();
             <?php endforeach; ?>
 
             <form method="post" enctype="multipart/form-data" data-loading>
+                <?= csrf_field() ?>
                 <?php require APP_ROOT . '/includes/event-form-fields.php'; ?>
                 <button type="submit" class="btn btn-primary btn-lg"><?php _e('organizer.save_event'); ?></button>
             </form>

@@ -17,6 +17,8 @@ $filters = [
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'], $_POST['action'])) {
+    csrf_verify_or_redirect();
+
     $result = handle_admin_user_action($_POST, (int) current_user()['id']);
     if ($result['ok']) {
         set_flash('success', $result['message'] ?? __('admin_users.action_done'));
@@ -133,6 +135,7 @@ echo render_flash();
                                         <a href="<?= base_url('admin/user.php?id=' . (int) $u['id']) ?>" class="btn btn-outline btn-sm"><?php _e('admin_users.manage'); ?></a>
                                         <?php if ($canManage): ?>
                                             <form method="post" class="admin-inline-form" onsubmit="return confirm(<?= json_encode($isActive ? __('admin_users.confirm_deactivate') : __('admin_users.confirm_activate')) ?>)">
+                                                <?= csrf_field() ?>
                                                 <input type="hidden" name="user_id" value="<?= (int) $u['id'] ?>">
                                                 <button type="submit" name="action" value="<?= $isActive ? 'deactivate' : 'activate' ?>" class="btn btn-outline btn-sm">
                                                     <?= e($isActive ? __('admin_users.deactivate') : __('admin_users.activate')) ?>

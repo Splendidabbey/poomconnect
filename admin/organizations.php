@@ -17,6 +17,8 @@ $orgs = db()->query(
 )->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['org_id'], $_POST['action'])) {
+    csrf_verify_or_redirect();
+
     $orgId = (int) $_POST['org_id'];
     if ($_POST['action'] === 'suspend') {
         suspend_organization($orgId);
@@ -50,6 +52,7 @@ echo render_flash();
                                 <td><?= e($org['custom_domain'] ?? $org['subdomain'] ?? '—') ?></td>
                                 <td>
                                     <form method="post" style="display:inline;">
+                                        <?= csrf_field() ?>
                                         <input type="hidden" name="org_id" value="<?= (int) $org['id'] ?>">
                                         <?php if (($org['status'] ?? 'active') === 'active'): ?>
                                             <button name="action" value="suspend" class="btn btn-outline btn-sm"><?php _e('admin.suspend'); ?></button>

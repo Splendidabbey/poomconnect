@@ -15,6 +15,8 @@ if (!$community) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     if (isset($_POST['join'])) {
         join_community($id, $userId);
     }
@@ -37,6 +39,7 @@ echo render_flash();
         <?php if (!empty($community['description'])): ?><p><?= nl2br(e($community['description'])) ?></p><?php endif; ?>
         <p><?= (int) $community['member_count'] ?> <?php _e('community.members'); ?></p>
         <form method="post">
+            <?= csrf_field() ?>
             <?php if ($member): ?>
                 <button name="leave" class="btn btn-outline"><?php _e('community.leave'); ?></button>
             <?php else: ?>

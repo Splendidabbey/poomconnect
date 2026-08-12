@@ -5,6 +5,14 @@
 *.swp
 *.swo
 
+# Dependencies
+/vendor/
+composer.phar
+
+# Test artifacts
+/.phpunit.cache
+/tests/tmp/
+
 # Local secrets (never commit)
 config/database.local.php
 .env

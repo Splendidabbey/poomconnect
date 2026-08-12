@@ -10,6 +10,17 @@ $eventId = (int) ($_GET['event_id'] ?? $_POST['event_id'] ?? 0);
 $event = get_event_by_id($eventId);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vote'])) {
+    if (!csrf_verify()) {
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+            header('Content-Type: application/json');
+            http_response_code(419);
+            echo json_encode(['success' => false, 'message' => __('validation.csrf_invalid')]);
+            exit;
+        }
+        set_flash('error', __('validation.csrf_invalid'));
+        redirect(base_url('participant/live.php?event_id=' . $eventId));
+    }
+
     $roundId = (int) ($_POST['round_id'] ?? 0);
     $targetId = (int) ($_POST['target_id'] ?? 0);
     $vote = trim($_POST['vote'] ?? '');
@@ -151,6 +162,7 @@ document.querySelectorAll('[data-vote]').forEach(btn => {
         fd.append('round_id', roundId);
         fd.append('target_id', partnerId);
         fd.append('vote', btn.dataset.vote);
+        fd.append('_csrf', window.PoomCsrfToken || '');
         await fetch(location.pathname + location.search, { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
         btn.classList.add('is-voted');
     });

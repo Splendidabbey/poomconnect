@@ -10,11 +10,15 @@ $applications = pending_host_applications();
 $organizers = marketplace_organizers(20);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['app_id'], $_POST['status'])) {
+    csrf_verify_or_redirect();
+
     review_host_application((int) $_POST['app_id'], (string) $_POST['status'], (int) current_user()['id'], trim($_POST['notes'] ?? ''));
     redirect(base_url('admin/marketplace.php'));
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['feature_org'])) {
+    csrf_verify_or_redirect();
+
     set_org_featured((int) $_POST['feature_org'], !empty($_POST['featured']));
     redirect(base_url('admin/marketplace.php'));
 }
@@ -32,6 +36,7 @@ require_once APP_ROOT . '/includes/header.php';
                 <strong><?= e($a['full_name']) ?></strong> — <?= e($a['organization_name']) ?>
                 <p><?= e($a['experience'] ?? '') ?></p>
                 <form method="post" class="form-row">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="app_id" value="<?= (int) $a['id'] ?>">
                     <select name="status" class="select"><option value="approved"><?php _e('admin.approve'); ?></option><option value="rejected"><?php _e('admin.reject'); ?></option></select>
                     <input class="input" name="notes" placeholder="<?= e(__('admin.notes')) ?>">
@@ -42,6 +47,7 @@ require_once APP_ROOT . '/includes/header.php';
         <h2 style="margin-top:2rem;"><?php _e('marketplace.featured'); ?></h2>
         <?php foreach ($organizers as $o): ?>
             <form method="post" class="card form-row" style="margin-bottom:0.5rem;">
+                <?= csrf_field() ?>
                 <input type="hidden" name="feature_org" value="<?= (int) $o['id'] ?>">
                 <span style="flex:1;"><?= e($o['name']) ?> ⭐ <?= e(number_format((float) $o['rating_avg'], 1)) ?></span>
                 <label class="checkbox-label"><input type="checkbox" name="featured" value="1" <?= !empty($o['is_featured']) ? 'checked' : '' ?>> <?php _e('marketplace.featured'); ?></label>

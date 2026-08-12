@@ -16,8 +16,9 @@ Production-ready PHP + MySQL website for Poom Connect — an event-based social 
 
 ## Requirements
 
-- PHP 8.1+
+- PHP 8.1+ with the `sodium` and `pdo_mysql` extensions
 - MySQL 5.7+ / MariaDB 10.3+
+- [Composer](https://getcomposer.org)
 - Apache or Nginx with mod_rewrite (optional)
 - GD or fileinfo extension for uploads
 
@@ -25,39 +26,43 @@ Production-ready PHP + MySQL website for Poom Connect — an event-based social 
 
 1. **Upload files** to your server (e.g. `/public_html/poomconnect/` or MAMP `htdocs/poomconnect/`)
 
-2. **Create MySQL database**
+2. **Install dependencies**
+   ```bash
+   composer install --no-dev --optimize-autoloader
+   ```
+
+3. **Create MySQL database**
    ```sql
    CREATE DATABASE poomconnect CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 
-3. **Import schema**
+4. **Import base schema**
    ```bash
    mysql -u root -p poomconnect < database.sql
    ```
 
-4. **Edit database credentials** in `config/database.php`:
-   ```php
-   define('DB_HOST', 'localhost');
-   define('DB_NAME', 'poomconnect');
-   define('DB_USER', 'your_user');
-   define('DB_PASS', 'your_password');
+5. **Configure environment**: copy `.env.example` to `.env` and fill in your DB credentials and a generated `APP_ENCRYPTION_KEY` (`php -r "echo base64_encode(random_bytes(32));"`) — this key encrypts payment gateway secrets at rest, so keep it safe and don't lose it.
+
+6. **Apply the rest of the schema** (payment settings, rate limiting, and other tables managed outside `database.sql`):
+   ```bash
+   php migrate.php
    ```
 
-5. **Run seed script once** (creates demo users, organization, and 3 events):
+7. **Run seed script once** (creates demo users, organization, and 3 events):
    ```
    https://yourdomain.com/seed.php
    ```
 
-6. **Delete `seed.php`** after setup for security
+8. **Delete `seed.php`** after setup for security
 
-7. **Set upload folder permissions** (writable by web server):
+9. **Set upload folder permissions** (writable by web server):
    ```bash
    chmod -R 755 uploads/
    ```
 
-8. **Login** with demo credentials:
-   - **Admin:** admin@poomconnect.com / admin123
-   - **Organizer:** organizer@poomconnect.com / organizer123
+10. **Login** with demo credentials, then change the passwords immediately (these are documented publicly in this README):
+    - **Admin:** admin@poomconnect.com / admin123
+    - **Organizer:** organizer@poomconnect.com / organizer123
 
 ## Folder Structure
 
@@ -83,10 +88,11 @@ Production-ready PHP + MySQL website for Poom Connect — an event-based social 
 
 1. Place project in `/Applications/MAMP/htdocs/poomconnect/`
 2. Start MAMP (Apache + MySQL)
-3. Default DB credentials in `config/database.php`: `root` / `root`
-4. Import `database.sql` via phpMyAdmin or CLI
-5. Visit `http://localhost:8888/poomconnect/seed.php`
-6. Open `http://localhost:8888/poomconnect/`
+3. Run `composer install`
+4. Copy `.env.example` to `.env`; default DB credentials are `root` / `root`, host `localhost`
+5. Import `database.sql` via phpMyAdmin or CLI, then run `php migrate.php`
+6. Visit `http://localhost:8888/poomconnect/seed.php`
+7. Open `http://localhost:8888/poomconnect/`
 
 ## Security Notes
 
@@ -94,8 +100,23 @@ Production-ready PHP + MySQL website for Poom Connect — an event-based social 
 - Passwords hashed with `password_hash()` / verified with `password_verify()`
 - Output escaped with `htmlspecialchars()`
 - Upload validation: JPG, PNG, WEBP only, max 5MB
+- CSRF tokens required on all state-changing POST requests (see `includes/security.php`)
+- Rate limiting on login, signup, registration, and payment slip upload
+- Payment gateway secrets (Stripe/Omise/PayPal/2C2P keys) encrypted at rest with `APP_ENCRYPTION_KEY`
+- Schema changes are applied via `php migrate.php`, not automatically on every request
 - Delete `seed.php` after initial setup
 - Do not expose database errors to users in production
+
+## Payments
+
+PromptPay QR and bank transfer (manual, slip upload + admin approval) work out of the box. Stripe Checkout is also wired up for real card payments:
+
+1. In `admin/payment-settings.php`, enable **Stripe**, add your publishable/secret keys, and set it as the default method.
+2. Create a webhook endpoint in your Stripe dashboard pointing at `https://yourdomain.com/api/stripe-webhook.php`, listening for `checkout.session.completed`, and paste the resulting webhook signing secret into the same settings page.
+3. Locally, use the [Stripe CLI](https://stripe.com/docs/stripe-cli) to forward events: `stripe listen --forward-to http://localhost:8888/poomconnect/api/stripe-webhook.php` (it prints a `whsec_...` secret to use for step 2).
+4. Complete a checkout with a [Stripe test card](https://stripe.com/docs/testing) — the payment approves and a ticket issues automatically once the webhook fires.
+
+Omise, PayPal, and 2C2P have settings UI but are not yet wired to real charges.
 
 ## Demo Flow
 

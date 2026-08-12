@@ -462,7 +462,7 @@ function join_event(int $eventId, int $userId, float $amount, ?int $couponId = n
             );
             $payment->execute([
                 $eventId, $userId, $finalAmount, $couponId, $discount, $amount,
-                'promptpay', $finalAmount <= 0 ? 'approved' : 'pending',
+                get_default_payment_method_slug(), $finalAmount <= 0 ? 'approved' : 'pending',
             ]);
 
             if ($finalAmount <= 0) {

@@ -15,6 +15,8 @@ $communities = get_org_communities((int) $org['id']);
 $series = get_org_recurring_series((int) $org['id']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     if (isset($_POST['create_community'])) {
         create_community((int) $org['id'], trim($_POST['name'] ?? ''), trim($_POST['description'] ?? ''));
         set_flash('success', __('community.created'));
@@ -41,6 +43,7 @@ echo render_flash();
                 <p><strong><?= e($c['name']) ?></strong> — <?= (int) $c['member_count'] ?> <?php _e('community.members'); ?></p>
             <?php endforeach; ?>
             <form method="post" class="form-row" style="margin-top:1rem;">
+                <?= csrf_field() ?>
                 <input type="hidden" name="create_community" value="1">
                 <input class="input" name="name" placeholder="<?= e(__('community.group_name')) ?>" required style="flex:1;">
                 <input class="input" name="description" placeholder="<?= e(__('community.description')) ?>">
@@ -54,6 +57,7 @@ echo render_flash();
                 <p><?= e($s['title']) ?> — <?= e($s['frequency']) ?></p>
             <?php endforeach; ?>
             <form method="post" class="form-row" style="margin-top:1rem;">
+                <?= csrf_field() ?>
                 <input type="hidden" name="create_series" value="1">
                 <input class="input" name="series_title" required style="flex:1;">
                 <select name="frequency" class="select"><option value="weekly"><?php _e('community.weekly'); ?></option><option value="biweekly"><?php _e('community.biweekly'); ?></option><option value="monthly"><?php _e('community.monthly'); ?></option></select>

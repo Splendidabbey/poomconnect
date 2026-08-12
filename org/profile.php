@@ -51,6 +51,7 @@ echo render_flash();
             </div>
             <?php if ($userId && is_participant()): ?>
                 <form method="post" action="<?= base_url('api/follow-organizer.php') ?>">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="org_id" value="<?= (int) $org['id'] ?>">
                     <input type="hidden" name="action" value="<?= $following ? 'unfollow' : 'follow' ?>">
                     <button type="submit" class="btn btn-primary"><?= $following ? e(__('community.unfollow')) : e(__('community.follow')) ?></button>

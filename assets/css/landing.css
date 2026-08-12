@@ -1,22 +1,25 @@
 /* Poom Connect — Landing page (pixel-match mockup) */
 
+/*
+ * These --lp-* aliases used to duplicate literal hex/px values instead of
+ * referencing the shared :root tokens in style.css — that meant the landing
+ * page silently drifted (e.g. its own light-section background, its own
+ * button radius) whenever the shared system changed. They now just point at
+ * the single source of truth so landing.css's ~950 existing var(--lp-*)
+ * references don't all need rewriting.
+ */
 .page-landing {
-    --lp-purple: #6C35FF;
-    --lp-pink: #FF2D8D;
-    --lp-gradient: linear-gradient(135deg, #6C35FF 0%, #FF2D8D 100%);
-    --lp-bg-dark: #050510;
-    --lp-bg-light: #f4f5f8;
-    --lp-text-dark: #12121f;
-    --lp-text-muted: #6b7280;
-    --lp-radius: 16px;
-    --lp-radius-lg: 20px;
-    --lp-radius-btn: 10px;
+    --lp-purple: var(--purple);
+    --lp-pink: var(--pink);
+    --lp-gradient: var(--gradient);
+    --lp-bg-dark: var(--bg);
+    --lp-bg-light: #f8f9fc; /* was #f4f5f8 — now matches .section-light elsewhere in the app */
+    --lp-text-dark: #1a1a2e; /* was #12121f — now matches .section-light's text color */
+    --lp-text-muted: #666; /* was #6b7280 — now matches .section-light p elsewhere in the app */
+    --lp-radius: var(--radius);
+    --lp-radius-lg: var(--radius-lg);
+    --lp-radius-btn: var(--radius-btn);
     --lp-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
-}
-
-/* Landing buttons — moderately rounded, not pill-shaped */
-.page-landing .btn {
-    border-radius: var(--lp-radius-btn);
 }
 
 .page-landing .main-content { background: var(--lp-bg-dark); }
@@ -311,7 +314,8 @@
 }
 
 .page-landing .match-card-float {
-    width: 290px;
+    width: 100%;
+    max-width: 290px;
     margin: 0;
     padding: 1.75rem 1.5rem;
     background: rgba(8, 6, 20, 0.82);

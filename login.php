@@ -20,11 +20,15 @@ $errors = [];
 $role = $_GET['role'] ?? 'participant';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_redirect();
+
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $role = $_POST['role'] ?? 'participant';
 
-    if ($email === '' || $password === '') {
+    if (rate_limit_exceeded('login', client_ip(), 10, 300)) {
+        $errors[] = __('validation.too_many_attempts');
+    } elseif ($email === '' || $password === '') {
         $errors[] = __('auth.email_password_required');
     } elseif ($role === 'participant' ? login_participant($email, $password) : login_user($email, $password)) {
         $userRole = current_user_role();
@@ -43,6 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect(base_url('my-events.php'));
         }
     } else {
+        rate_limit_hit('login', client_ip());
+
         $stmt = db()->prepare('SELECT account_status FROM users WHERE email = ? LIMIT 1');
         $stmt->execute([$email]);
         $status = $stmt->fetchColumn();
@@ -77,6 +83,7 @@ echo render_flash();
         </div>
 
         <form method="post" data-loading>
+            <?= csrf_field() ?>
             <input type="hidden" name="role" value="<?= e($role) ?>">
 
             <div class="form-group">
