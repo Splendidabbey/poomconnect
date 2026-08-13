@@ -47,6 +47,7 @@ require_once APP_ROOT . '/includes/ai_policy.php';
 require_once APP_ROOT . '/includes/admin-platform.php';
 require_once APP_ROOT . '/includes/admin-users.php';
 require_once APP_ROOT . '/includes/payment-settings.php';
+require_once APP_ROOT . '/includes/mobile-api.php';
 require_once APP_ROOT . '/includes/marketing.php';
 require_once APP_ROOT . '/includes/social-share.php';
 require_once APP_ROOT . '/includes/auth.php';

@@ -1,0 +1,14 @@
+# MAMP/Apache FastCGI strips Authorization before PHP sees it.
+# Forward it so Bearer tokens work for mobile API endpoints.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+
+<IfModule mod_setenvif.c>
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+</IfModule>
+
+# Apache 2.4+: allow Authorization through CGI/FastCGI
+CGIPassAuth On

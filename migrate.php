@@ -48,6 +48,7 @@ function run_migrations(): void
         'legacy_admin_platform_schema' => 'ensure_admin_platform_schema',
         'legacy_admin_users_schema' => 'ensure_admin_users_schema',
         'legacy_payment_settings_schema' => 'ensure_payment_settings_schema',
+        'legacy_mobile_api_schema' => 'ensure_mobile_api_schema',
         'legacy_localization_schema' => 'ensure_localization_schema',
         'legacy_marketing_schema' => 'ensure_marketing_schema',
     ];
