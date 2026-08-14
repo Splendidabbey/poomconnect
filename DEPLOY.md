@@ -42,12 +42,27 @@ These stay on the server as-is:
 - User uploads under `uploads/slips/`, `uploads/events/`, `uploads/logos/`
 - `seed.php` is not uploaded (delete the copy already on the server after initial setup)
 
-## 4. After the first deploy
+## 4. Required once: fix server ownership
 
-In **aaPanel → Terminal** (or SSH), fix upload permissions once:
+Most site files are currently owned by UID `501`, so FTP (user `www`) cannot create folders such as `api/mobile` or overwrite PHP files. That is what caused `550 Can't change directory to mobile`.
+
+In **aaPanel → Terminal** as root, paste:
 
 ```bash
-DEPLOY_PATH=/www/wwwroot/poomconnect.com bash /www/wwwroot/poomconnect.com/deploy/aapanel-permissions.sh
+chown -R www:www /www/wwwroot/poomconnect.com
+find /www/wwwroot/poomconnect.com -type d -exec chmod 755 {} \;
+find /www/wwwroot/poomconnect.com -type f -exec chmod 644 {} \;
+mkdir -p /www/wwwroot/poomconnect.com/api/mobile \
+  /www/wwwroot/poomconnect.com/uploads/events/{og,banners,gallery}
+chmod -R 775 /www/wwwroot/poomconnect.com/uploads
+chmod 640 /www/wwwroot/poomconnect.com/.env 2>/dev/null || true
+chmod 640 /www/wwwroot/poomconnect.com/config/database.local.php 2>/dev/null || true
+```
+
+Then re-run **Actions → Deploy to production**. Later you can use:
+
+```bash
+bash /www/wwwroot/poomconnect.com/deploy/aapanel-permissions.sh
 ```
 
 When schema changes ship, run migrations on the server:
@@ -65,8 +80,11 @@ Confirm production `.env` exists and is not world-readable. Do not regenerate `A
 - Recheck `FTP_PASSWORD` in GitHub secrets  
 - In aaPanel → FTP, allow all IPs (GitHub Actions uses changing runner IPs)
 
+**Deploy fails with `550 Can't change directory` or `Permission denied`**  
+- FTP cannot write folders owned by another user (UID 501). Run the chown commands in section 4, then re-run the workflow.
+
 **Deploy fails on TLS / FTPS**  
-- Pure-FTPd on this host supports explicit FTPS. If a later config change breaks TLS, set `protocol: ftp` in `.github/workflows/deploy.yml`
+- This host uses explicit FTPS on port 21. If TLS breaks after an aaPanel change, the workflow can drop `set ftp:ssl-force true`.
 
 **500 after deploy**  
 - Confirm `.env` and `config/database.local.php` still exist on the server  
