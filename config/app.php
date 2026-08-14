@@ -17,6 +17,11 @@ define('UPLOAD_MAX_SIZE', 5 * 1024 * 1024); // 5MB
 define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
 define('ALLOWED_IMAGE_EXTENSIONS', ['jpg', 'jpeg', 'png', 'webp']);
 
+if (($_ENV['APP_ENV'] ?? '') === 'production') {
+    ini_set('display_errors', '0');
+    ini_set('log_errors', '1');
+}
+
 date_default_timezone_set('Asia/Bangkok');
 
 if (session_status() === PHP_SESSION_NONE) {

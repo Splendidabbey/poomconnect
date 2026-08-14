@@ -189,11 +189,69 @@ function validate_upload(array $file): array
     return ['ok' => true, 'ext' => $ext, 'mime' => $mime];
 }
 
+function upload_directories(): array
+{
+    return [
+        'uploads',
+        'uploads/slips',
+        'uploads/events',
+        'uploads/events/og',
+        'uploads/events/banners',
+        'uploads/events/gallery',
+        'uploads/logos',
+    ];
+}
+
+function ensure_upload_directories(): bool
+{
+    $ready = true;
+
+    foreach (upload_directories() as $dir) {
+        $path = APP_ROOT . '/' . $dir;
+        if (is_dir($path)) {
+            continue;
+        }
+        if (!@mkdir($path, 0775, true) && !is_dir($path)) {
+            error_log('Poom Connect: could not create upload directory: ' . $path);
+            $ready = false;
+        }
+    }
+
+    return $ready;
+}
+
+function uploads_writable(): bool
+{
+    ensure_upload_directories();
+    $probe = APP_ROOT . '/uploads/events';
+
+    return is_dir($probe) && is_writable($probe);
+}
+
+function last_upload_error(): ?string
+{
+    return $GLOBALS['_poom_last_upload_error'] ?? null;
+}
+
+function set_last_upload_error(?string $message): void
+{
+    $GLOBALS['_poom_last_upload_error'] = $message;
+}
+
 function save_upload(array $file, string $directory, string $prefix = 'file'): ?string
 {
+    set_last_upload_error(null);
     $validation = validate_upload($file);
 
     if (!$validation['ok']) {
+        set_last_upload_error($validation['error'] ?? __('validation.invalid_upload'));
+
+        return null;
+    }
+
+    if (!ensure_upload_directories()) {
+        set_last_upload_error(__('validation.upload_dir_unavailable'));
+
         return null;
     }
 
@@ -201,15 +259,44 @@ function save_upload(array $file, string $directory, string $prefix = 'file'): ?
     $targetDir = APP_ROOT . '/uploads/' . trim($directory, '/');
     $targetPath = $targetDir . '/' . $filename;
 
-    if (!is_dir($targetDir) && !mkdir($targetDir, 0755, true)) {
+    if (!is_dir($targetDir) && !@mkdir($targetDir, 0775, true) && !is_dir($targetDir)) {
+        error_log('Poom Connect: mkdir failed for ' . $targetDir);
+        set_last_upload_error(__('validation.upload_permission_denied'));
+
+        return null;
+    }
+
+    if (!is_writable($targetDir)) {
+        error_log('Poom Connect: upload directory not writable: ' . $targetDir);
+        set_last_upload_error(__('validation.upload_permission_denied'));
+
         return null;
     }
 
     if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+        error_log('Poom Connect: move_uploaded_file failed for ' . $targetPath);
+        set_last_upload_error(__('validation.upload_permission_denied'));
+
         return null;
     }
 
+    @chmod($targetPath, 0664);
+
     return trim($directory, '/') . '/' . $filename;
+}
+
+function save_upload_or_null(array $file, string $directory, string $prefix = 'file'): ?string
+{
+    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+        return null;
+    }
+
+    return save_upload($file, $directory, $prefix);
+}
+
+function upload_failure_message(): string
+{
+    return last_upload_error() ?? __('validation.upload_failed');
 }
 
 function create_or_get_participant_user(string $fullName, string $email, ?string $phone, ?string $lineId): array

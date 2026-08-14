@@ -29,5 +29,8 @@ uploads/logos/*
 # Seed script should not exist on production after setup
 # (still tracked in repo for initial deploy — remove on server manually)
 
+# FTP deploy state (lives on the server; ignore if downloaded locally)
+.ftp-deploy-sync-state.json
+
 # Logs
 *.log

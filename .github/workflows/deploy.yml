@@ -1,4 +1,4 @@
-name: Deploy to VPS
+name: Deploy to production
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: deploy-vps
+  group: deploy-production
   cancel-in-progress: true
 
 jobs:
@@ -24,65 +24,54 @@ jobs:
         run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -I{} php -l {}
 
   deploy:
-    name: Deploy to production
+    name: FTP deploy
     needs: ci
     runs-on: ubuntu-latest
-    environment: production
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
 
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
-
-      - name: Rsync files to VPS
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_DEPLOY_PATH: ${{ secrets.VPS_DEPLOY_PATH }}
-        run: |
-          rsync -avz --delete \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='.DS_Store' \
-            --exclude='.env' \
-            --exclude='config/database.local.php' \
-            --exclude='uploads/slips/*' \
-            --exclude='uploads/events/*' \
-            --exclude='uploads/logos/*' \
-            --exclude='deploy/server-setup.sh' \
-            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new" \
-            ./ "${VPS_USER}@${VPS_HOST}:${VPS_DEPLOY_PATH}/"
-
-      - name: Post-deploy on server
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_DEPLOY_PATH: ${{ secrets.VPS_DEPLOY_PATH }}
-        run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new \
-            "${VPS_USER}@${VPS_HOST}" \
-            "DEPLOY_PATH='${VPS_DEPLOY_PATH}' bash -s" < deploy/post-deploy.sh
-
-      - name: Run database migrations on server
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_DEPLOY_PATH: ${{ secrets.VPS_DEPLOY_PATH }}
-        run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new \
-            "${VPS_USER}@${VPS_HOST}" \
-            "cd '${VPS_DEPLOY_PATH}' && php migrate.php"
+      - name: Sync files over FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          security: loose
+          server-dir: ./
+          timeout: 60000
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/.env
+            **/.env.local
+            **/.DS_Store
+            **/.claude/**
+            **/.cursor/**
+            **/config/database.local.php
+            **/tests/**
+            **/.phpunit.cache/**
+            **/phpunit.xml
+            **/database.sql
+            **/seed.php
+            **/composer.phar
+            **/deploy/server-setup.sh
+            **/uploads/slips/**
+            **/uploads/events/**
+            **/uploads/logos/**
 
       - name: Deployment summary
         run: |
-          echo "Deployed to ${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}"
-          echo "Branch: ${{ github.ref_name }}"
-          echo "Commit: ${{ github.sha }}"
+          echo "Deployed ${{ github.sha }} from ${{ github.ref_name }} to ${{ secrets.FTP_SERVER }}"

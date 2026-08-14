@@ -1,156 +1,89 @@
-# CI/CD — Deploy to VPS (50.6.250.5)
+# CI/CD — Deploy to aaPanel (50.6.250.5)
 
-Automated deploy via **GitHub Actions** on every push to `main`.
+Automated deploy via **GitHub Actions + FTPS** on every push to `main`.
+
+Document root: `/www/wwwroot/poomconnect.com` (FTP user is already chrooted there).
 
 ## Pipeline overview
 
 | Workflow | Trigger | Action |
 |----------|---------|--------|
-| `ci.yml` | Push/PR to `main` or `develop` | PHP syntax lint + structure check |
-| `deploy.yml` | Push to `main` (or manual) | Rsync to VPS + post-deploy permissions |
+| `ci.yml` | Push/PR to `main` or `develop` | PHP syntax lint + PHPUnit + structure check |
+| `deploy.yml` | Push to `main` (or manual) | Composer install, then FTPS sync |
 
-## 1. One-time VPS setup
+## 1. GitHub Secrets (required)
 
-SSH into your server:
+In **GitHub → Settings → Secrets and variables → Actions**, add:
+
+| Secret | Value |
+|--------|--------|
+| `FTP_SERVER` | `50.6.250.5` |
+| `FTP_USERNAME` | `poomconnect` |
+| `FTP_PASSWORD` | FTP password from aaPanel (do not commit it) |
+
+Direct link: [Add repository secrets](https://github.com/Splendidabbey/poomconnect/settings/secrets/actions)
+
+Never put the FTP password in the repo, workflow file, or chat-committed docs.
+
+## 2. Deploy
+
+Every push to `main` runs lint, then uploads changed files over FTPS.
+
+Manual deploy: **GitHub → Actions → Deploy to production → Run workflow**
+
+The first deploy uploads the full tree (except excluded paths) and may take several minutes. Later deploys only sync changed files.
+
+## 3. What is never overwritten
+
+These stay on the server as-is:
+
+- `.env` (encryption key and production settings)
+- `config/database.local.php` (database credentials)
+- User uploads under `uploads/slips/`, `uploads/events/`, `uploads/logos/`
+- `seed.php` is not uploaded (delete the copy already on the server after initial setup)
+
+## 4. After the first deploy
+
+In **aaPanel → Terminal** (or SSH), fix upload permissions once:
 
 ```bash
-ssh root@50.6.250.5
+DEPLOY_PATH=/www/wwwroot/poomconnect.com bash /www/wwwroot/poomconnect.com/deploy/aapanel-permissions.sh
 ```
 
-Upload or clone the project, then run:
+When schema changes ship, run migrations on the server:
 
 ```bash
-cd /var/www/poomconnect   # or wherever you put the files first time
-bash deploy/server-setup.sh
-```
-
-Optional environment overrides:
-
-```bash
-DEPLOY_PATH=/var/www/poomconnect \
-DEPLOY_USER=deploy \
-DOMAIN=yourdomain.com \
-bash deploy/server-setup.sh
-```
-
-Import the database (first time only):
-
-```bash
-mysql -u poomconnect_user -p poomconnect < /var/www/poomconnect/database.sql
-cd /var/www/poomconnect
-composer install --no-dev --optimize-autoloader
+cd /www/wwwroot/poomconnect.com
 php migrate.php
 ```
 
-`server-setup.sh` already writes a `.env` with a generated `APP_ENCRYPTION_KEY` (used to encrypt payment gateway secrets at rest) — don't regenerate it after gateway credentials have been saved, or they become unreadable.
+Confirm production `.env` exists and is not world-readable. Do not regenerate `APP_ENCRYPTION_KEY` after payment gateway credentials have been saved.
 
-Visit `https://yourdomain.com/seed.php` once, then delete `seed.php` on the server.
+## 5. Troubleshooting
 
-## 2. SSH key for GitHub Actions
+**Deploy fails on FTP login (530)**  
+- Recheck `FTP_PASSWORD` in GitHub secrets  
+- In aaPanel → FTP, allow all IPs (GitHub Actions uses changing runner IPs)
 
-On your **local machine**:
+**Deploy fails on TLS / FTPS**  
+- Pure-FTPd on this host supports explicit FTPS. If a later config change breaks TLS, set `protocol: ftp` in `.github/workflows/deploy.yml`
 
-```bash
-ssh-keygen -t ed25519 -C "github-actions-poomconnect" -f ~/.ssh/poomconnect_deploy -N ""
-```
+**500 after deploy**  
+- Confirm `.env` and `config/database.local.php` still exist on the server  
+- Check aaPanel → Logs → nginx / PHP error log
 
-Add the **public** key to the VPS:
+**Uploads not writable**  
+- Re-run `deploy/aapanel-permissions.sh` as root (see section 4)
 
-```bash
-ssh-copy-id -i ~/.ssh/poomconnect_deploy.pub deploy@50.6.250.5
-```
-
-Test:
-
-```bash
-ssh -i ~/.ssh/poomconnect_deploy deploy@50.6.250.5 "echo OK"
-```
-
-Give deploy user write access to the web root:
-
-```bash
-ssh root@50.6.250.5
-chown -R deploy:www-data /var/www/poomconnect
-chmod -R g+w /var/www/poomconnect
-```
-
-## 3. GitHub repository setup
-
-```bash
-cd /Applications/MAMP/htdocs/poomconnect
-git init
-git add .
-git commit -m "Initial commit with CI/CD"
-git branch -M main
-git remote add origin https://github.com/YOUR_USER/poomconnect.git
-git push -u origin main
-```
-
-## 4. GitHub Secrets
-
-In **GitHub → Repository → Settings → Secrets and variables → Actions**, add:
-
-| Secret | Value | Example |
-|--------|-------|---------|
-| `VPS_HOST` | Server IP | `50.6.250.5` |
-| `VPS_USER` | SSH deploy user | `deploy` |
-| `VPS_DEPLOY_PATH` | App root on server | `/var/www/poomconnect` |
-| `VPS_SSH_KEY` | Full private key contents | Contents of `~/.ssh/poomconnect_deploy` |
-
-To copy the private key:
-
-```bash
-cat ~/.ssh/poomconnect_deploy
-```
-
-Paste the entire output including `-----BEGIN` and `-----END` lines.
-
-### Optional: GitHub Environment
-
-Create a **production** environment in GitHub (Settings → Environments) to require approval before deploy.
-
-## 5. Deploy
-
-Every push to `main` runs CI then deploys automatically.
-
-Manual deploy:
-
-**GitHub → Actions → Deploy to VPS → Run workflow**
-
-## 6. Production config
-
-Database credentials live in **`config/database.local.php`** on the server only (gitignored).
-
-Local MAMP still uses defaults (`root`/`root`) unless you create `database.local.php` locally.
-
-Set production URL in `config/app.php`:
-
-```php
-define('APP_URL', 'https://yourdomain.com');
-```
-
-## 7. Troubleshooting
-
-**Deploy fails on SSH**
-- Verify `VPS_SSH_KEY`, `VPS_HOST`, `VPS_USER`
-- Ensure deploy user can write to `VPS_DEPLOY_PATH`
-
-**500 after deploy**
-- Check `config/database.local.php` exists on server
-- Check PHP-FPM logs: `tail -f /var/log/nginx/error.log`
-
-**Uploads not working**
-- Re-run post-deploy: `DEPLOY_PATH=/var/www/poomconnect bash deploy/post-deploy.sh`
-
-**Rsync deletes nothing important**
-- User uploads in `uploads/` are excluded from sync delete patterns
+**Files missing after deploy**  
+- Check the workflow exclude list. `.git`, tests, `seed.php`, and `database.sql` are intentionally not uploaded.
 
 ## Files
 
 ```
-.github/workflows/ci.yml      # Lint on PR/push
-.github/workflows/deploy.yml  # Deploy to 50.6.250.5
-deploy/server-setup.sh        # One-time VPS bootstrap
-deploy/post-deploy.sh         # Permissions after each deploy
-config/database.local.php     # Server-only secrets (gitignored)
+.github/workflows/ci.yml              # Lint / tests on PR and push
+.github/workflows/deploy.yml          # FTPS deploy to 50.6.250.5
+deploy/aapanel-permissions.sh         # Fix uploads/ ownership on aaPanel
+deploy/post-deploy.sh                 # Optional permission pass if you have SSH
+config/database.local.php             # Server-only secrets (gitignored)
 ```

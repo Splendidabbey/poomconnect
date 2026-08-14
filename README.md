@@ -131,15 +131,15 @@ Omise, PayPal, and 2C2P have settings UI but are not yet wired to real charges.
 
 Proprietary — Poom Connect
 
-## CI/CD (VPS deploy)
+## CI/CD (aaPanel / FTPS)
 
-Production server: **50.6.250.5**
+Production server: **50.6.250.5** (`/www/wwwroot/poomconnect.com`)
 
 GitHub Actions deploys automatically on push to `main`. Full setup guide:
 
 **[DEPLOY.md](DEPLOY.md)**
 
 Quick summary:
-1. Run `deploy/server-setup.sh` on the VPS once
-2. Add GitHub secrets: `VPS_HOST`, `VPS_USER`, `VPS_DEPLOY_PATH`, `VPS_SSH_KEY`
-3. Push to `main` → CI lint → rsync to VPS
+1. Add GitHub secrets: `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`
+2. Push to `main` → CI lint → FTPS sync
+3. Run `deploy/aapanel-permissions.sh` once on the server if uploads are not writable

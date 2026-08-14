@@ -12,9 +12,12 @@ if (!$org && !is_admin()) {
     redirect(base_url('organizer/dashboard.php'));
 }
 
+ensure_upload_directories();
+
 $pageTitle = __('organizer.create_event_title');
 $bodyClass = 'dashboard-page';
 $errors = [];
+$warnings = [];
 $event = null;
 if (!empty($_GET['template_id'])) {
     $tpl = get_event_template((int) $_GET['template_id']);
@@ -42,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] !== UPLOAD_ERR_NO_FILE) {
         $coverPath = save_upload($_FILES['cover_image'], 'events', 'event');
         if (!$coverPath) {
-            $errors[] = __('validation.invalid_file');
+            $warnings[] = __('validation.cover_upload_skipped', ['reason' => upload_failure_message()]);
         }
     }
 
@@ -50,13 +53,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['og_image']) && $_FILES['og_image']['error'] !== UPLOAD_ERR_NO_FILE) {
         $ogImagePath = save_upload($_FILES['og_image'], 'events/og', 'og');
         if (!$ogImagePath) {
-            $errors[] = __('validation.invalid_file');
+            $warnings[] = __('validation.optional_upload_skipped', ['field' => 'OG image']);
         }
     }
 
     $bannerPath = null;
     if (isset($_FILES['banner_image']) && $_FILES['banner_image']['error'] !== UPLOAD_ERR_NO_FILE) {
         $bannerPath = save_upload($_FILES['banner_image'], 'events/banners', 'banner');
+        if (!$bannerPath) {
+            $warnings[] = __('validation.optional_upload_skipped', ['field' => 'Banner']);
+        }
     }
 
     if ($errors === [] && $org) {
@@ -70,7 +76,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         save_event_gallery($eventId, $_FILES['gallery_images'] ?? []);
         ensure_live_state($eventId, $data['round_duration']);
 
-        set_flash('success', __('flash.event_created'));
+        if ($warnings !== []) {
+            set_flash('warning', implode(' ', $warnings));
+        } else {
+            set_flash('success', __('flash.event_created'));
+        }
         redirect(base_url('organizer/events.php'));
     }
 }
@@ -90,8 +100,16 @@ echo render_flash();
         </div>
 
         <div class="card form-card-wide">
+            <?php if (!uploads_writable()): ?>
+                <div class="alert alert-warning"><?php _e('validation.uploads_not_writable'); ?></div>
+            <?php endif; ?>
+
             <?php foreach ($errors as $error): ?>
                 <div class="alert alert-error"><?= e($error) ?></div>
+            <?php endforeach; ?>
+
+            <?php foreach ($warnings as $warning): ?>
+                <div class="alert alert-warning"><?= e($warning) ?></div>
             <?php endforeach; ?>
 
             <?php if (!$org && !is_admin()): ?>
