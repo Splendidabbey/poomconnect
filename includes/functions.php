@@ -65,6 +65,55 @@ function pretty_url_path(string $path): string
     return $path . $query . $fragment;
 }
 
+/**
+ * Pretty paths (/login) need Apache rewrite or a working nginx snippet.
+ * Production aaPanel is nginx without that snippet, so default to .php URLs there.
+ * Set PRETTY_URLS=true in .env after nginx rewrite is confirmed.
+ */
+function pretty_urls_enabled(): bool
+{
+    $raw = $_ENV['PRETTY_URLS'] ?? getenv('PRETTY_URLS');
+    if (is_string($raw) && $raw !== '') {
+        return in_array(strtolower($raw), ['1', 'true', 'yes', 'on'], true);
+    }
+
+    $software = (string) ($_SERVER['SERVER_SOFTWARE'] ?? '');
+    if (stripos($software, 'nginx') !== false) {
+        return false;
+    }
+
+    return stripos($software, 'apache') !== false;
+}
+
+function public_url_path(string $path): string
+{
+    if (pretty_urls_enabled()) {
+        return pretty_url_path($path);
+    }
+
+    $path = str_replace('\\', '/', $path);
+    $fragment = '';
+    $query = '';
+
+    if (str_contains($path, '#')) {
+        [$path, $fragmentPart] = explode('#', $path, 2);
+        $fragment = '#' . $fragmentPart;
+    }
+
+    if (str_contains($path, '?')) {
+        [$path, $queryPart] = explode('?', $path, 2);
+        $query = '?' . $queryPart;
+    }
+
+    $path = trim($path, '/');
+
+    if ($path === '' || $path === 'index.php' || $path === 'index') {
+        return $query . $fragment;
+    }
+
+    return $path . $query . $fragment;
+}
+
 function set_flash(string $type, string $message): void
 {
     $_SESSION['flash'] = ['type' => $type, 'message' => $message];

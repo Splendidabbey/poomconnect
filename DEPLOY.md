@@ -74,32 +74,23 @@ php migrate.php
 
 Confirm production `.env` exists and is not world-readable. Do not regenerate `APP_ENCRYPTION_KEY` after payment gateway credentials have been saved.
 
-## 5. Pretty URLs (required on nginx)
+## 5. Pretty URLs (nginx)
 
-FTP deploy cannot change nginx. Without this, `https://poomconnect.com/login` returns **404 Not Found** while `https://poomconnect.com/login.php` still works.
+On nginx, links stay as `.php` (`/login.php`) until rewrite works. Apache (local MAMP) still uses `/login`.
 
-In **aaPanel → Website → poomconnect.com → Rewrite**, paste:
+To make `/login` work, open **aaPanel → Website → poomconnect.com → Rewrite**, delete any previous rules, and paste **only**:
 
 ```nginx
-location = /robots.txt { rewrite ^ /robots.php last; }
-location = /sitemap.xml { rewrite ^ /sitemap.php last; }
-location = /og-image { rewrite ^ /og-image.php last; }
-
-location = /admin { rewrite ^ /admin/dashboard.php last; }
-location = /admin/ { rewrite ^ /admin/dashboard.php last; }
-location = /organizer { rewrite ^ /organizer/dashboard.php last; }
-location = /organizer/ { rewrite ^ /organizer/dashboard.php last; }
-
 if (!-e $request_filename) {
     rewrite ^/(.+)/?$ /$1.php last;
 }
 ```
 
-Save, then **Reload** nginx. Confirm `/login`, `/events`, `/signup`, and `/admin` load.
+Save. If aaPanel shows a red nginx error, the rules were not applied — do not keep `location { }` blocks in Rewrite (aaPanel already wraps this file inside `location /`).
 
-If reload fails with `duplicate location`, use **Config** instead and merge `deploy/nginx-pretty-urls.conf` into the existing `location /` block (do not add a second `location /`).
+Then **Reload** nginx and open `/login`. When that works, set `PRETTY_URLS=true` in the server `.env`.
 
-Same rules live in `deploy/aapanel-rewrite.conf`.
+Full `location` rules belong in **Config**, not Rewrite: see `deploy/nginx-pretty-urls.conf`.
 
 ## 6. Troubleshooting
 

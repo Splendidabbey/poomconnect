@@ -105,7 +105,7 @@ function base_url(string $path = ''): string
         $origin = $scheme . '://' . $host . app_web_base();
     }
 
-    $pretty = pretty_url_path($path);
+    $pretty = public_url_path($path);
 
     if ($pretty === '' || str_starts_with($pretty, '?') || str_starts_with($pretty, '#')) {
         return $origin . $pretty;
