@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 $orgCurrent = basename($_SERVER['SCRIPT_NAME'] ?? '');
+if ($orgCurrent === 'index.php') {
+    $orgCurrent = 'dashboard.php';
+}
 $orgUser = current_user();
 ?>
 <div class="admin-mobile-bar">

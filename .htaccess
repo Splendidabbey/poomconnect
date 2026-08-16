@@ -1,0 +1,42 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block web access to app internals
+    RewriteRule ^(config|includes|src|vendor|tests|migrations|cron|deploy|lang)(/|$) - [F,L]
+
+    RewriteRule ^robots\.txt$ robots.php [L]
+    RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
+    # Redirect GET/HEAD *.php to extensionless URLs (keep API, images, and setup scripts)
+    RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+    RewriteCond %{THE_REQUEST} \s/+(.*/)?index\.php[\s?]
+    RewriteCond %{REQUEST_URI} !/api/
+    RewriteRule ^index\.php$ /%1 [R=301,L,QSA]
+
+    RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+    RewriteCond %{THE_REQUEST} \s/+(.+)\.php[\s?]
+    RewriteCond %{REQUEST_URI} !/api/
+    RewriteCond %{REQUEST_URI} !migrate\.php$
+    RewriteCond %{REQUEST_URI} !seed\.php$
+    RewriteCond %{REQUEST_URI} !og-image\.php$
+    RewriteCond %{REQUEST_URI} !sitemap\.php$
+    RewriteCond %{REQUEST_URI} !robots\.php$
+    RewriteRule ^.+\.php$ /%1 [R=301,L,QSA]
+
+    # Existing files (assets, remaining .php, uploads) are served as-is
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # /admin and /organizer directories → dashboards
+    RewriteRule ^admin/?$ admin/dashboard.php [L,QSA]
+    RewriteRule ^organizer/?$ organizer/dashboard.php [L,QSA]
+
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # /login → login.php, /admin/users → admin/users.php, etc.
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^(.+?)/?$ $1.php [L,QSA]
+</IfModule>
+
+DirectoryIndex index.php

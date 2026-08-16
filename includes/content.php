@@ -467,38 +467,75 @@ function google_maps_embed_url(array $event): ?string
 
 function page_meta(array $overrides = []): array
 {
-    return array_merge([
+    $defaults = [
         'title' => app_name(),
         'description' => __('app.meta_description'),
-        'image' => brand_logo('lg'),
-        'url' => base_url(),
+        'image' => seo_share_image(['type' => 'home']),
+        'image_alt' => app_name() . ' — ' . app_tagline(),
+        'image_width' => SEO_OG_WIDTH,
+        'image_height' => SEO_OG_HEIGHT,
+        'url' => seo_canonical_url(),
         'type' => 'website',
-    ], $overrides);
+        'robots' => seo_robots_content(),
+        'json_ld' => [],
+    ];
+
+    $meta = array_merge($defaults, $overrides);
+    $meta['description'] = seo_truncate((string) $meta['description']);
+    $meta['url'] = seo_strip_tracking((string) $meta['url']);
+
+    return $meta;
 }
 
 function event_page_meta(array $event): array
 {
-    $image = $event['og_image'] ?? $event['cover_image'] ?? null;
+    $crumbs = [
+        ['name' => app_name(), 'url' => base_url()],
+        ['name' => __('nav.events'), 'url' => base_url('events.php')],
+        ['name' => (string) $event['title']],
+    ];
 
     return page_meta([
         'title' => $event['meta_title'] ?: $event['title'],
-        'description' => $event['meta_description'] ?: mb_substr(strip_tags((string) ($event['description'] ?? '')), 0, 160),
-        'image' => $image ? upload_url($image) : default_event_image(),
+        'description' => $event['meta_description'] ?: seo_truncate((string) ($event['description'] ?? __('app.meta_description'))),
+        'image' => seo_share_image([
+            'type' => 'event',
+            'id' => (int) $event['id'],
+            'v' => (string) ($event['updated_at'] ?? $event['id']),
+        ]),
+        'image_alt' => (string) $event['title'],
         'url' => event_url($event),
-        'type' => 'event',
+        'type' => 'website',
+        'json_ld' => [
+            seo_json_ld_event($event),
+            seo_json_ld_breadcrumbs($crumbs),
+        ],
     ]);
 }
 
 function blog_page_meta(array $post): array
 {
-    $image = $post['cover_image'] ?? null;
+    $crumbs = [
+        ['name' => app_name(), 'url' => base_url()],
+        ['name' => __('nav.blog'), 'url' => base_url('blog.php')],
+        ['name' => (string) $post['title']],
+    ];
 
     return page_meta([
         'title' => $post['meta_title'] ?: $post['title'],
-        'description' => $post['meta_description'] ?: mb_substr(strip_tags((string) ($post['excerpt'] ?? $post['content'] ?? '')), 0, 160),
-        'image' => $image ? upload_url($image) : brand_logo('lg'),
+        'description' => $post['meta_description'] ?: seo_truncate((string) ($post['excerpt'] ?? $post['content'] ?? __('blog_page.subtitle'))),
+        'image' => seo_share_image([
+            'type' => 'article',
+            'id' => (int) $post['id'],
+            'v' => (string) ($post['updated_at'] ?? $post['id']),
+        ]),
+        'image_alt' => (string) $post['title'],
         'url' => blog_url($post),
         'type' => 'article',
+        'json_ld' => [
+            seo_json_ld_article($post),
+            seo_json_ld_breadcrumbs($crumbs),
+        ],
     ]);
 }
 

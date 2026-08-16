@@ -22,6 +22,8 @@ config/database.local.php
 uploads/slips/*
 uploads/events/*
 uploads/logos/*
+uploads/og/*
+!uploads/og/.gitkeep
 !uploads/slips/.gitkeep
 !uploads/events/.gitkeep
 !uploads/logos/.gitkeep

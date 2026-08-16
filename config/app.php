@@ -24,7 +24,7 @@ if (($_ENV['APP_ENV'] ?? '') === 'production') {
 
 date_default_timezone_set('Asia/Bangkok');
 
-if (session_status() === PHP_SESSION_NONE) {
+if (!defined('SEO_SKIP_SESSION') && session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
@@ -36,6 +36,7 @@ init_currency();
 
 require_once APP_ROOT . '/config/database.php';
 require_once APP_ROOT . '/includes/functions.php';
+require_once APP_ROOT . '/includes/seo.php';
 require_once APP_ROOT . '/includes/content.php';
 require_once APP_ROOT . '/includes/platform.php';
 require_once APP_ROOT . '/includes/promptpay.php';
@@ -64,28 +65,53 @@ require_once APP_ROOT . '/includes/security.php';
 
 resolve_tenant_from_request();
 
+function app_web_base(): string
+{
+    $docRoot = $_SERVER['DOCUMENT_ROOT'] ?? '';
+    if (is_string($docRoot) && $docRoot !== '') {
+        $docRootReal = realpath($docRoot);
+        $appRootReal = realpath(APP_ROOT) ?: APP_ROOT;
+        $docRootNorm = rtrim(str_replace('\\', '/', $docRootReal !== false ? $docRootReal : $docRoot), '/');
+        $appRootNorm = rtrim(str_replace('\\', '/', $appRootReal), '/');
+
+        if ($docRootNorm !== '' && str_starts_with($appRootNorm, $docRootNorm)) {
+            $base = substr($appRootNorm, strlen($docRootNorm));
+
+            return ($base === '/' || $base === '') ? '' : $base;
+        }
+    }
+
+    $script = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
+    $base = rtrim($script, '/');
+    $known = ['/api/mobile', '/organizer', '/admin', '/api', '/community', '/participant', '/org', '/safety', '/cron'];
+
+    foreach ($known as $suffix) {
+        if (str_ends_with($base, $suffix)) {
+            $base = substr($base, 0, -strlen($suffix));
+            break;
+        }
+    }
+
+    return ($base === '/' || $base === '\\' || $base === '.' || $base === '') ? '' : $base;
+}
+
 function base_url(string $path = ''): string
 {
     if (APP_URL !== '') {
-        return rtrim(APP_URL, '/') . '/' . ltrim($path, '/');
+        $origin = rtrim(APP_URL, '/');
+    } else {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $origin = $scheme . '://' . $host . app_web_base();
     }
 
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $script = dirname($_SERVER['SCRIPT_NAME'] ?? '');
-    $base = rtrim(str_replace('\\', '/', $script), '/');
+    $pretty = pretty_url_path($path);
 
-    if (str_ends_with($base, '/organizer') || str_ends_with($base, '/admin') || str_ends_with($base, '/api')) {
-        $base = dirname($base);
+    if ($pretty === '' || str_starts_with($pretty, '?') || str_starts_with($pretty, '#')) {
+        return $origin . $pretty;
     }
 
-    $url = $scheme . '://' . $host . ($base === '/' ? '' : $base);
-
-    if ($path === '') {
-        return $url;
-    }
-
-    return $url . '/' . ltrim($path, '/');
+    return $origin . '/' . ltrim($pretty, '/');
 }
 
 function asset_url(string $path): string

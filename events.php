@@ -22,9 +22,10 @@ $events = search_events($filters, 50);
 $categories = get_categories('event');
 $cities = get_event_cities();
 $pageMeta = page_meta([
-    'title' => __('events_page.title'),
-    'description' => __('events_page.subtitle'),
+    'title' => __('seo.events_title'),
+    'description' => __('seo.events_description'),
     'url' => base_url('events.php'),
+    'image' => seo_share_image(['type' => 'events']),
 ]);
 
 require_once APP_ROOT . '/includes/header.php';

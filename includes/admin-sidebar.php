@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 $adminCurrent = basename($_SERVER['SCRIPT_NAME'] ?? '');
+if ($adminCurrent === 'index.php') {
+    $adminCurrent = 'dashboard.php';
+}
 $adminUser = current_user();
 ?>
 <div class="admin-mobile-bar">

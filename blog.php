@@ -14,9 +14,10 @@ $filters = [
 $posts = search_blog_posts($filters, 24);
 $categories = get_categories('blog');
 $pageMeta = page_meta([
-    'title' => __('blog_page.title'),
-    'description' => __('blog_page.subtitle'),
+    'title' => __('seo.blog_title'),
+    'description' => __('seo.blog_description'),
     'url' => base_url('blog.php'),
+    'image' => seo_share_image(['type' => 'blog']),
 ]);
 
 require_once APP_ROOT . '/includes/header.php';

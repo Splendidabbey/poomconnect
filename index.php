@@ -4,9 +4,16 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/config/app.php';
 
-$pageTitle = __('common.home');
+$pageTitle = __('seo.home_title');
 $bodyClass = 'page-landing';
 $upcomingEvents = get_published_events(3);
+$pageMeta = page_meta([
+    'title' => __('seo.home_title'),
+    'description' => __('seo.home_description'),
+    'url' => base_url(),
+    'image' => seo_share_image(['type' => 'home']),
+    'json_ld' => [seo_json_ld_organization(), seo_json_ld_website()],
+]);
 
 $demoEvents = [
     [

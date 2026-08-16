@@ -23,6 +23,14 @@ if (!$org || empty($org['profile_public'])) {
 
 set_tenant_context((int) $org['id']);
 $pageTitle = $org['name'];
+$pageMeta = page_meta([
+    'title' => $org['name'],
+    'description' => seo_truncate((string) ($org['bio'] ?? $org['landing_body'] ?? $org['name'])),
+    'url' => base_url('org/profile.php?org=' . urlencode((string) ($org['slug'] ?? $slug))),
+    'image' => !empty($org['logo'])
+        ? seo_share_image(['type' => 'org', 'id' => (int) $org['id']])
+        : seo_share_image(['type' => 'home']),
+]);
 $events = org_events((int) $org['id'], 12);
 $ratings = org_ratings((int) $org['id'], 5);
 $userId = current_user_id();

@@ -16,6 +16,12 @@ if (is_logged_in()) {
 }
 
 $pageTitle = __('signup.title');
+$pageMeta = page_meta([
+    'title' => __('seo.signup_title'),
+    'description' => __('seo.signup_description'),
+    'url' => base_url('signup.php'),
+    'image' => seo_share_image(['type' => 'signup']),
+]);
 $errors = [];
 $role = $_GET['role'] ?? 'participant';
 

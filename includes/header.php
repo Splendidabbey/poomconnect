@@ -24,7 +24,7 @@ $isOrganizerPage = str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/organizer/');
 $isDashboardPage = $isAdminPage || $isOrganizerPage;
 $currentPath = basename($_SERVER['SCRIPT_NAME'] ?? 'index.php');
 $currentLocale = current_locale();
-$contentPages = ['events.php', 'event.php', 'blog.php', 'article.php', 'profile.php', 'my-events.php', 'signup.php', 'register.php', 'pay.php', 'ticket.php'];
+$contentPages = ['events.php', 'event.php', 'blog.php', 'article.php', 'profile.php', 'my-events.php', 'signup.php', 'register.php', 'pay.php', 'ticket.php', 'privacy.php', 'terms.php'];
 $platformPages = array_merge($contentPages, ['login.php', 'signup.php', 'chat.php', 'chat-thread.php', 'notifications.php', 'loyalty.php']);
 $loadContentCss = in_array($currentPath, $contentPages, true);
 $loadPlatformCss = in_array($currentPath, $platformPages, true) || str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/participant/') || str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/organizer/');
@@ -40,21 +40,41 @@ $brandLogoNav = $tenantOrg && !empty($tenantOrg['logo']) ? org_logo_url($tenantO
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050510">
+    <meta name="application-name" content="<?= e($brandName) ?>">
+    <meta name="apple-mobile-web-app-title" content="<?= e($brandName) ?>">
+    <meta name="robots" content="<?= e($pageMeta['robots'] ?? seo_robots_content()) ?>">
     <meta name="description" content="<?= e($pageMeta['description'] ?? __('app.meta_description')) ?>">
-    <?php if (!empty($pageMeta['url'])): ?>
-    <link rel="canonical" href="<?= e($pageMeta['url']) ?>">
-    <?php endif; ?>
-    <meta property="og:title" content="<?= e(($pageMeta['title'] ?? $pageTitle) . ' | ' . app_name()) ?>">
+    <link rel="canonical" href="<?= e($pageMeta['url'] ?? seo_canonical_url()) ?>">
+    <?php foreach (seo_hreflang_map($pageMeta['url'] ?? null) as $hreflang => $href): ?>
+    <link rel="alternate" hreflang="<?= e($hreflang) ?>" href="<?= e($href) ?>">
+    <?php endforeach; ?>
+    <meta property="og:site_name" content="<?= e(app_name()) ?>">
+    <meta property="og:locale" content="<?= e(seo_og_locale()) ?>">
+    <?php foreach (SUPPORTED_LOCALES as $altLocale): ?>
+        <?php if ($altLocale !== current_locale()): ?>
+    <meta property="og:locale:alternate" content="<?= e(seo_og_locale($altLocale)) ?>">
+        <?php endif; ?>
+    <?php endforeach; ?>
+    <meta property="og:title" content="<?= e(seo_document_title((string) ($pageMeta['title'] ?? $pageTitle), $brandName)) ?>">
     <meta property="og:description" content="<?= e($pageMeta['description'] ?? __('app.meta_description')) ?>">
     <meta property="og:type" content="<?= e($pageMeta['type'] ?? 'website') ?>">
-    <?php if (!empty($pageMeta['url'])): ?>
-    <meta property="og:url" content="<?= e($pageMeta['url']) ?>">
+    <meta property="og:url" content="<?= e($pageMeta['url'] ?? seo_canonical_url()) ?>">
+    <?php $ogImage = (string) ($pageMeta['image'] ?? seo_share_image()); ?>
+    <meta property="og:image" content="<?= e($ogImage) ?>">
+    <?php if (str_starts_with($ogImage, 'https://')): ?>
+    <meta property="og:image:secure_url" content="<?= e($ogImage) ?>">
     <?php endif; ?>
-    <?php if (!empty($pageMeta['image'])): ?>
-    <meta property="og:image" content="<?= e($pageMeta['image']) ?>">
-    <?php endif; ?>
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="<?= e((string) ($pageMeta['image_width'] ?? SEO_OG_WIDTH)) ?>">
+    <meta property="og:image:height" content="<?= e((string) ($pageMeta['image_height'] ?? SEO_OG_HEIGHT)) ?>">
+    <meta property="og:image:alt" content="<?= e($pageMeta['image_alt'] ?? ($pageMeta['title'] ?? $brandName)) ?>">
     <meta name="twitter:card" content="summary_large_image">
-    <title><?= e($pageMeta['title'] ?? $pageTitle) ?> | <?= e($brandName) ?></title>
+    <meta name="twitter:title" content="<?= e(seo_document_title((string) ($pageMeta['title'] ?? $pageTitle), $brandName)) ?>">
+    <meta name="twitter:description" content="<?= e($pageMeta['description'] ?? __('app.meta_description')) ?>">
+    <meta name="twitter:image" content="<?= e($pageMeta['image'] ?? seo_share_image()) ?>">
+    <meta name="twitter:image:alt" content="<?= e($pageMeta['image_alt'] ?? ($pageMeta['title'] ?? $brandName)) ?>">
+    <title><?= e(seo_document_title((string) ($pageMeta['title'] ?? $pageTitle), $brandName)) ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -79,6 +99,14 @@ $brandLogoNav = $tenantOrg && !empty($tenantOrg['logo']) ? org_logo_url($tenantO
     <?php if ($tenantOrg): ?>
     <style><?= org_theme_css($tenantOrg) ?></style>
     <?php endif; ?>
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="<?= e(base_url('sitemap.php')) ?>">
+    <?php
+    $jsonLd = $pageMeta['json_ld'] ?? [];
+    if ($isLanding && $jsonLd === []) {
+        $jsonLd = [seo_json_ld_organization(), seo_json_ld_website()];
+    }
+    seo_render_head_json_ld(is_array($jsonLd) ? $jsonLd : []);
+    ?>
 </head>
 <body class="<?= e($bodyClass) ?><?= locale_font_class() ? ' ' . e(locale_font_class()) : '' ?><?= $tenantOrg ? ' tenant-branded' : '' ?>">
 <a href="#main" class="skip-link"><?= e(__('nav.skip_to_content')) ?></a>

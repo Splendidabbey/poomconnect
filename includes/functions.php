@@ -13,6 +13,58 @@ function redirect(string $url): never
     exit;
 }
 
+/**
+ * Turn a PHP script path into a public URL path without the .php extension.
+ * Query strings and fragments are preserved. index.php becomes the site root.
+ */
+function pretty_url_path(string $path): string
+{
+    $path = str_replace('\\', '/', $path);
+
+    $fragment = '';
+    $query = '';
+
+    if (str_contains($path, '#')) {
+        [$path, $fragmentPart] = explode('#', $path, 2);
+        $fragment = '#' . $fragmentPart;
+    }
+
+    if (str_contains($path, '?')) {
+        [$path, $queryPart] = explode('?', $path, 2);
+        $query = '?' . $queryPart;
+    }
+
+    $path = trim($path, '/');
+
+    if ($path === '' || $path === 'index.php' || $path === 'index') {
+        return $query . $fragment;
+    }
+
+    if ($path === 'sitemap.php' || $path === 'sitemap.xml') {
+        return 'sitemap.xml' . $query . $fragment;
+    }
+
+    if ($path === 'robots.php' || $path === 'robots.txt') {
+        return 'robots.txt' . $query . $fragment;
+    }
+
+    if (str_ends_with($path, '.php')) {
+        $path = substr($path, 0, -4);
+    }
+
+    if (str_ends_with($path, '/index')) {
+        $path = substr($path, 0, -6);
+    }
+
+    $path = match ($path) {
+        'admin/dashboard' => 'admin/',
+        'organizer/dashboard' => 'organizer/',
+        default => $path,
+    };
+
+    return $path . $query . $fragment;
+}
+
 function set_flash(string $type, string $message): void
 {
     $_SESSION['flash'] = ['type' => $type, 'message' => $message];
@@ -877,7 +929,15 @@ function user_can_manage_event(int $userId, array $event): bool
 
 function default_event_image(): string
 {
-    return 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80';
+    if (is_file(APP_ROOT . '/poomconnect_images/og/default.jpg')) {
+        return brand_url('og/default.jpg');
+    }
+
+    if (is_file(APP_ROOT . '/poomconnect_images/og/og-backdrop.jpg')) {
+        return brand_url('og/og-backdrop.jpg');
+    }
+
+    return brand_url('og/og-backdrop.png');
 }
 
 function default_avatar(string $name): string

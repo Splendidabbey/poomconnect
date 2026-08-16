@@ -24,6 +24,11 @@ echo render_flash();
 <article class="article-page">
     <section class="page-header article-header">
         <div class="container article-header-inner">
+            <?= render_breadcrumbs([
+                ['name' => app_name(), 'url' => base_url()],
+                ['name' => __('nav.blog'), 'url' => base_url('blog.php')],
+                ['name' => $post['title']],
+            ]) ?>
             <?php if (!empty($post['category_name'])): ?>
                 <a href="<?= base_url('blog.php?category_id=' . (int) $post['category_id']) ?>" class="badge badge-purple"><?= e($post['category_name']) ?></a>
             <?php endif; ?>

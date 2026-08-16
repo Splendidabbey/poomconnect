@@ -23,6 +23,14 @@ set_tenant_context((int) $org['id']);
 $pageTitle = $org['landing_headline'] ?: $org['name'];
 $bodyClass = 'page-tenant-landing';
 $events = org_events((int) $org['id'], 6);
+$pageMeta = page_meta([
+    'title' => $org['landing_headline'] ?: $org['name'],
+    'description' => seo_truncate((string) ($org['landing_body'] ?? $org['name'])),
+    'url' => org_public_url($org),
+    'image' => !empty($org['logo'])
+        ? seo_share_image(['type' => 'org', 'id' => (int) $org['id']])
+        : seo_share_image(['type' => 'home']),
+]);
 
 require_once APP_ROOT . '/includes/header.php';
 echo render_flash();

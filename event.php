@@ -36,6 +36,11 @@ echo render_flash();
 
 <section class="page-header event-detail-header">
     <div class="container">
+        <?= render_breadcrumbs([
+            ['name' => app_name(), 'url' => base_url()],
+            ['name' => __('nav.events'), 'url' => base_url('events.php')],
+            ['name' => $event['title']],
+        ]) ?>
         <div class="event-detail-badges">
             <?php if (!empty($event['category_name'])): ?>
                 <span class="badge badge-purple"><?= e($event['category_name']) ?></span>
@@ -54,7 +59,7 @@ echo render_flash();
                 <?php if ($gallery): ?>
                     <div class="event-gallery-thumbs">
                         <?php foreach ($gallery as $img): ?>
-                            <img src="<?= e(upload_url($img['image_path'])) ?>" alt="">
+                            <img src="<?= e(upload_url($img['image_path'])) ?>" alt="<?= e($event['title']) ?>">
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
