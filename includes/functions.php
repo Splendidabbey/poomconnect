@@ -161,6 +161,23 @@ function get_organization_for_user(int $userId): ?array
     $stmt = db()->prepare('SELECT * FROM organizations WHERE owner_id = ? LIMIT 1');
     $stmt->execute([$userId]);
     $org = $stmt->fetch();
+    if ($org) {
+        return $org;
+    }
+
+    try {
+        $stmt = db()->prepare(
+            'SELECT o.* FROM organizations o
+             JOIN organization_members m ON m.organization_id = o.id
+             WHERE m.user_id = ?
+             ORDER BY m.id ASC
+             LIMIT 1'
+        );
+        $stmt->execute([$userId]);
+        $org = $stmt->fetch();
+    } catch (PDOException) {
+        return null;
+    }
 
     return $org ?: null;
 }

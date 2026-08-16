@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/config/app.php';
-require_login(['participant']);
+require_member();
 
 $userId = (int) current_user()['id'];
 $pageTitle = __('my_events.title');
@@ -34,9 +34,12 @@ echo render_flash();
 
 <section class="section content-section">
     <div class="container">
-        <div class="profile-quick-links">
-            <a href="<?= base_url('profile.php') ?>" class="btn btn-outline btn-sm"><?php _e('nav.profile'); ?></a>
+        <div class="profile-quick-links member-loop-links">
             <a href="<?= base_url('events.php') ?>" class="btn btn-primary btn-sm"><?php _e('my_events.browse'); ?></a>
+            <a href="<?= base_url('participant/matches.php') ?>" class="btn btn-outline btn-sm"><?php _e('nav.matches'); ?></a>
+            <a href="<?= base_url('organizer/create-event.php') ?>" class="btn btn-outline btn-sm"><?php _e('nav.host'); ?></a>
+            <a href="<?= base_url('organizer/dashboard.php') ?>" class="btn btn-outline btn-sm"><?php _e('nav.host_studio'); ?></a>
+            <a href="<?= base_url('profile.php') ?>" class="btn btn-outline btn-sm"><?php _e('nav.profile'); ?></a>
         </div>
 
         <?php if ($registrations): ?>

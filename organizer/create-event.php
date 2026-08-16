@@ -6,7 +6,7 @@ require_once dirname(__DIR__) . '/config/app.php';
 require_organizer();
 
 $user = current_user();
-$org = get_organization_for_user((int) $user['id']);
+$org = ensure_member_organization($user) ?? get_organization_for_user((int) $user['id']);
 
 if (!$org && !is_admin()) {
     redirect(base_url('organizer/dashboard.php'));

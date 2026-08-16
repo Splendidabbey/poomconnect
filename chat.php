@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/config/app.php';
-require_login(['participant', 'organizer', 'admin', 'super_admin']);
+require_member();
 
 $userId = (int) current_user()['id'];
 $roomId = (int) ($_GET['room'] ?? 0);

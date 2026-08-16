@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/config/app.php';
 csrf_verify_or_json();
-require_login(['participant', 'organizer']);
+require_member();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect(base_url('index.php'));

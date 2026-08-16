@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/config/app.php';
-require_login(['participant']);
+require_member();
 
 $userId = (int) current_user()['id'];
 $eventId = (int) ($_GET['event_id'] ?? $_POST['event_id'] ?? 0);

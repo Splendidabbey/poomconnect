@@ -160,9 +160,7 @@ function mobile_authenticate_request(): ?array
 
     $_SESSION['user_id'] = (int) $row['user_id'];
     $_SESSION['user_role'] = $row['role'];
-    if ($row['role'] === 'participant') {
-        $_SESSION['participant_user_id'] = (int) $row['user_id'];
-    }
+    $_SESSION['participant_user_id'] = (int) $row['user_id'];
 
     $cachedUser = $row;
 

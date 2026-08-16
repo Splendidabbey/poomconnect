@@ -5,14 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/config/app.php';
 
 if (is_logged_in()) {
-    $role = current_user_role();
-    if (in_array($role, ['admin', 'super_admin'], true)) {
-        redirect(base_url('admin/dashboard.php'));
-    }
-    if ($role === 'organizer') {
-        redirect(base_url('organizer/dashboard.php'));
-    }
-    redirect(base_url('my-events.php'));
+    redirect(member_home_url());
 }
 
 $pageTitle = __('signup.title');
@@ -23,7 +16,6 @@ $pageMeta = page_meta([
     'image' => seo_share_image(['type' => 'signup']),
 ]);
 $errors = [];
-$role = $_GET['role'] ?? 'participant';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify_or_redirect();
@@ -32,8 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirm = $_POST['password_confirm'] ?? '';
-    $role = $_POST['role'] ?? 'participant';
-    $orgName = trim($_POST['organization_name'] ?? '');
 
     if (rate_limit_exceeded('signup', client_ip(), 10, 300)) {
         $errors[] = __('validation.too_many_attempts');
@@ -50,13 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $confirm) {
         $errors[] = __('validation.password_mismatch');
     }
-    if ($role === 'organizer' && $orgName === '') {
-        $errors[] = __('validation.organization_name_required');
-    }
 
     if ($errors === []) {
         rate_limit_hit('signup', client_ip());
-        $result = register_account($fullName, $email, $password, $role, $orgName ?: null);
+        $result = register_account($fullName, $email, $password, 'participant');
         if ($result['ok']) {
             login_user($email, $password, true);
             $refCode = trim($_POST['ref'] ?? $_GET['ref'] ?? '');
@@ -64,10 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 record_referral_use($refCode, (int) current_user()['id']);
             }
             set_flash('success', __('signup.success'));
-            if ($role === 'organizer') {
-                redirect(base_url('organizer/dashboard.php'));
-            }
-            redirect(base_url('profile.php'));
+            redirect(base_url('events.php'));
         }
         $errors[] = $result['error'] ?? __('validation.registration_failed');
     }
@@ -81,19 +65,14 @@ echo render_flash();
     <div class="auth-card card auth-card-wide">
         <h1><?php _e('signup.title'); ?></h1>
         <p><?php _e('signup.subtitle'); ?></p>
+        <p class="form-help"><?php _e('signup.member_note'); ?></p>
 
         <?php foreach ($errors as $error): ?>
             <div class="alert alert-error"><?= e($error) ?></div>
         <?php endforeach; ?>
 
-        <div class="role-toggle">
-            <a href="<?= base_url('signup.php?role=participant') ?>" class="btn <?= $role === 'participant' ? 'btn-primary' : 'btn-outline' ?> btn-sm"><?php _e('signup.participant'); ?></a>
-            <a href="<?= base_url('signup.php?role=organizer') ?>" class="btn <?= $role === 'organizer' ? 'btn-primary' : 'btn-outline' ?> btn-sm"><?php _e('signup.organizer'); ?></a>
-        </div>
-
         <form method="post" data-loading>
             <?= csrf_field() ?>
-            <input type="hidden" name="role" value="<?= e($role) ?>">
             <?php if (!empty($_GET['ref'])): ?><input type="hidden" name="ref" value="<?= e($_GET['ref']) ?>"><?php endif; ?>
 
             <div class="form-group">
@@ -105,13 +84,6 @@ echo render_flash();
                 <label for="email"><?php _e('auth.email'); ?> *</label>
                 <input type="email" id="email" name="email" class="input" required value="<?= e($_POST['email'] ?? '') ?>">
             </div>
-
-            <?php if ($role === 'organizer'): ?>
-            <div class="form-group">
-                <label for="organization_name"><?php _e('signup.organization_name'); ?> *</label>
-                <input type="text" id="organization_name" name="organization_name" class="input" required value="<?= e($_POST['organization_name'] ?? '') ?>">
-            </div>
-            <?php endif; ?>
 
             <div class="form-row">
                 <div class="form-group">
@@ -128,7 +100,7 @@ echo render_flash();
         </form>
 
         <p class="form-help auth-switch">
-            <?php _e('signup.have_account'); ?> <a href="<?= base_url('login.php?role=' . e($role)) ?>"><?php _e('auth.sign_in'); ?></a>
+            <?php _e('signup.have_account'); ?> <a href="<?= base_url('login.php') ?>"><?php _e('auth.sign_in'); ?></a>
         </p>
     </div>
 </section>

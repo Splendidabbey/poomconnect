@@ -175,26 +175,25 @@ $brandLogoNav = $tenantOrg && !empty($tenantOrg['logo']) ? org_logo_url($tenantO
                 <a href="<?= base_url('events.php') ?>" class="<?= $currentPath === 'events.php' ? 'active' : '' ?>"><?php _e('nav.events'); ?></a>
                 <a href="<?= base_url('blog.php') ?>" class="<?= in_array($currentPath, ['blog.php', 'article.php'], true) ? 'active' : '' ?>"><?php _e('nav.blog'); ?></a>
                 <a href="<?= base_url('index.php#how-it-works') ?>"><?php _e('nav.how_it_works'); ?></a>
-                <a href="<?= base_url('index.php#organizers') ?>"><?php _e('nav.for_organizers'); ?></a>
+                <a href="<?= base_url('index.php#organizers') ?>"><?php _e('nav.host'); ?></a>
                 <a href="<?= base_url('index.php#pricing') ?>"><?php _e('nav.pricing'); ?></a>
                 <?php if (is_logged_in()): ?>
                     <?php if (is_admin()): ?>
                         <a href="<?= base_url('admin/dashboard.php') ?>"><?php _e('nav.admin'); ?></a>
-                    <?php elseif (is_organizer()): ?>
-                        <a href="<?= base_url('organizer/dashboard.php') ?>"><?php _e('nav.dashboard'); ?></a>
-                    <?php else: ?>
-                        <a href="<?= base_url('my-events.php') ?>"><?php _e('nav.my_events'); ?></a>
-                        <a href="<?= base_url('chat.php') ?>"><?php _e('nav.chat'); ?></a>
-                        <a href="<?= base_url('community/groups.php') ?>"><?php _e('sidebar.community'); ?></a>
-                        <a href="<?= base_url('notifications.php') ?>" class="nav-link-badge">
-                            <?php _e('nav.notifications'); ?>
-                            <?php if ($navUnreadCount > 0): ?>
-                                <span class="nav-badge" aria-label="<?= e(__('notify.unread_count', ['count' => $navUnreadCount])) ?>"><?= $navUnreadCount > 99 ? '99+' : $navUnreadCount ?></span>
-                            <?php endif; ?>
-                        </a>
-                        <a href="<?= base_url('loyalty.php') ?>"><?php _e('nav.loyalty'); ?></a>
-                        <a href="<?= base_url('profile.php') ?>"><?php _e('nav.profile'); ?></a>
                     <?php endif; ?>
+                    <a href="<?= base_url('my-events.php') ?>"><?php _e('nav.my_events'); ?></a>
+                    <a href="<?= base_url('participant/matches.php') ?>"><?php _e('nav.matches'); ?></a>
+                    <a href="<?= base_url('chat.php') ?>"><?php _e('nav.chat'); ?></a>
+                    <a href="<?= base_url('community/groups.php') ?>"><?php _e('sidebar.community'); ?></a>
+                    <a href="<?= base_url('notifications.php') ?>" class="nav-link-badge">
+                        <?php _e('nav.notifications'); ?>
+                        <?php if ($navUnreadCount > 0): ?>
+                            <span class="nav-badge" aria-label="<?= e(__('notify.unread_count', ['count' => $navUnreadCount])) ?>"><?= $navUnreadCount > 99 ? '99+' : $navUnreadCount ?></span>
+                        <?php endif; ?>
+                    </a>
+                    <a href="<?= base_url('organizer/dashboard.php') ?>"><?php _e('nav.host_studio'); ?></a>
+                    <a href="<?= base_url('loyalty.php') ?>"><?php _e('nav.loyalty'); ?></a>
+                    <a href="<?= base_url('profile.php') ?>"><?php _e('nav.profile'); ?></a>
                     <a href="<?= base_url('logout.php') ?>"><?php _e('nav.logout'); ?></a>
                 <?php else: ?>
                     <a href="<?= base_url('login.php') ?>"><?php _e('nav.login'); ?></a>

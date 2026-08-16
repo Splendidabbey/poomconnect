@@ -2,21 +2,28 @@
 
 declare(strict_types=1);
 
-function current_user(): ?array
+function current_user(bool $refresh = false): ?array
 {
     if (!isset($_SESSION['user_id'])) {
         return null;
     }
 
     static $user = null;
+    static $loaded = false;
 
-    if ($user !== null) {
+    if ($refresh) {
+        $loaded = false;
+        $user = null;
+    }
+
+    if ($loaded) {
         return $user;
     }
 
     $stmt = db()->prepare('SELECT * FROM users WHERE id = ? LIMIT 1');
     $stmt->execute([(int) $_SESSION['user_id']]);
     $user = $stmt->fetch() ?: null;
+    $loaded = true;
 
     return $user;
 }
@@ -31,12 +38,51 @@ function current_user_role(): ?string
     return current_user()['role'] ?? null;
 }
 
+function member_capable_roles(): array
+{
+    return ['participant', 'organizer', 'moderator', 'admin', 'super_admin'];
+}
+
+function role_can_join_events(?string $role): bool
+{
+    return $role !== null && in_array($role, member_capable_roles(), true);
+}
+
+function role_can_host_events(?string $role): bool
+{
+    return role_can_join_events($role);
+}
+
+function is_member(): bool
+{
+    return is_logged_in();
+}
+
+function can_join_events(): bool
+{
+    return role_can_join_events(current_user_role());
+}
+
+function can_host_events(): bool
+{
+    return role_can_host_events(current_user_role());
+}
+
+function member_home_url(): string
+{
+    if (is_admin()) {
+        return base_url('admin/dashboard.php');
+    }
+
+    return base_url('my-events.php');
+}
+
 function is_logged_in(): bool
 {
     return current_user() !== null;
 }
 
-function login_user(string $email, string $password, bool $allowParticipant = false): bool
+function login_user(string $email, string $password, bool $allowParticipant = true): bool
 {
     $stmt = db()->prepare('SELECT * FROM users WHERE email = ? LIMIT 1');
     $stmt->execute([trim($email)]);
@@ -50,25 +96,18 @@ function login_user(string $email, string $password, bool $allowParticipant = fa
         return false;
     }
 
-    $allowedRoles = ['organizer', 'admin', 'super_admin', 'moderator'];
-    if ($allowParticipant) {
-        $allowedRoles[] = 'participant';
-    }
-
-    if (!in_array($user['role'], $allowedRoles, true)) {
+    if (!role_can_join_events($user['role'] ?? null)) {
         return false;
     }
 
     session_regenerate_id(true);
     $_SESSION['user_id'] = (int) $user['id'];
     $_SESSION['user_role'] = $user['role'];
+    $_SESSION['participant_user_id'] = (int) $user['id'];
+    current_user(true);
 
     if (function_exists('record_user_login')) {
         record_user_login((int) $user['id']);
-    }
-
-    if ($user['role'] === 'participant') {
-        $_SESSION['participant_user_id'] = (int) $user['id'];
     }
 
     return true;
@@ -111,9 +150,18 @@ function require_login(array $roles = []): void
     }
 }
 
+function require_member(): void
+{
+    require_login(member_capable_roles());
+}
+
 function require_organizer(): void
 {
-    require_login(['organizer', 'admin', 'super_admin']);
+    require_member();
+    if (is_admin()) {
+        return;
+    }
+    ensure_member_organization();
 }
 
 function require_admin(): void
@@ -128,17 +176,25 @@ function is_admin(): bool
 
 function is_organizer(): bool
 {
-    return in_array(current_user_role(), ['organizer', 'admin', 'super_admin'], true);
+    if (!is_logged_in()) {
+        return false;
+    }
+
+    if (in_array(current_user_role(), ['organizer', 'admin', 'super_admin'], true)) {
+        return true;
+    }
+
+    return get_organization_for_user((int) current_user()['id']) !== null;
 }
 
 function require_participant(): void
 {
-    require_login(['participant']);
+    require_member();
 }
 
 function is_participant(): bool
 {
-    return current_user_role() === 'participant';
+    return can_join_events();
 }
 
 function is_guest(): bool

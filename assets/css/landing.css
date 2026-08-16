@@ -503,6 +503,31 @@
     margin: 0 auto;
 }
 
+.page-landing .event-loop {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+}
+.page-landing .event-loop li {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--lp-purple);
+    background: rgba(108, 53, 255, 0.08);
+    border-radius: 999px;
+    padding: 0.4rem 0.7rem;
+}
+.page-landing .event-loop li:not(:last-child)::after {
+    content: '→';
+    margin-left: 0.55rem;
+    color: var(--lp-text-muted);
+    font-weight: 600;
+}
+
 .page-landing .step-connector-h {
     width: 48px;
     height: 2px;

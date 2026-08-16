@@ -5,46 +5,32 @@ declare(strict_types=1);
 require_once __DIR__ . '/config/app.php';
 
 if (is_logged_in()) {
-    $role = current_user_role();
-    if (in_array($role, ['admin', 'super_admin'], true)) {
-        redirect(base_url('admin/dashboard.php'));
-    }
-    if ($role === 'organizer') {
-        redirect(base_url('organizer/dashboard.php'));
-    }
-    redirect(base_url('my-events.php'));
+    redirect(member_home_url());
 }
 
 $pageTitle = __('auth.welcome_title');
 $errors = [];
-$role = $_GET['role'] ?? 'participant';
+$wantAdmin = ($_GET['role'] ?? $_POST['role'] ?? '') === 'admin';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify_or_redirect();
 
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
-    $role = $_POST['role'] ?? 'participant';
 
     if (rate_limit_exceeded('login', client_ip(), 10, 300)) {
         $errors[] = __('validation.too_many_attempts');
     } elseif ($email === '' || $password === '') {
         $errors[] = __('auth.email_password_required');
-    } elseif ($role === 'participant' ? login_participant($email, $password) : login_user($email, $password)) {
+    } elseif (login_user($email, $password)) {
         $userRole = current_user_role();
 
-        if ($role === 'admin' && !in_array($userRole, ['admin', 'super_admin'], true)) {
+        if ($wantAdmin && !in_array($userRole, ['admin', 'super_admin'], true)) {
             logout_user();
             $errors[] = __('auth.invalid_admin_credentials');
         } else {
             set_flash('success', __('auth.welcome_back'));
-            if (in_array($userRole, ['admin', 'super_admin'], true)) {
-                redirect(base_url('admin/dashboard.php'));
-            }
-            if ($userRole === 'organizer') {
-                redirect(base_url('organizer/dashboard.php'));
-            }
-            redirect(base_url('my-events.php'));
+            redirect(member_home_url());
         }
     } else {
         rate_limit_hit('login', client_ip());
@@ -76,15 +62,11 @@ echo render_flash();
             <div class="alert alert-error"><?= e($error) ?></div>
         <?php endforeach; ?>
 
-        <div class="role-toggle">
-            <a href="<?= base_url('login.php?role=participant') ?>" class="btn <?= $role === 'participant' ? 'btn-primary' : 'btn-outline' ?> btn-sm"><?php _e('signup.participant'); ?></a>
-            <a href="<?= base_url('login.php?role=organizer') ?>" class="btn <?= $role === 'organizer' ? 'btn-primary' : 'btn-outline' ?> btn-sm"><?php _e('auth.organizer'); ?></a>
-            <a href="<?= base_url('login.php?role=admin') ?>" class="btn <?= $role === 'admin' ? 'btn-primary' : 'btn-outline' ?> btn-sm"><?php _e('auth.admin_role'); ?></a>
-        </div>
-
         <form method="post" data-loading>
             <?= csrf_field() ?>
-            <input type="hidden" name="role" value="<?= e($role) ?>">
+            <?php if ($wantAdmin): ?>
+                <input type="hidden" name="role" value="admin">
+            <?php endif; ?>
 
             <div class="form-group">
                 <label for="email"><?php _e('auth.email'); ?></label>
@@ -100,11 +82,12 @@ echo render_flash();
         </form>
 
         <p class="form-help auth-switch">
-            <?php _e('signup.no_account'); ?> <a href="<?= base_url('signup.php?role=' . e($role === 'admin' ? 'organizer' : $role)) ?>"><?php _e('signup.create_account'); ?></a>
+            <?php _e('signup.no_account'); ?> <a href="<?= base_url('signup.php') ?>"><?php _e('signup.create_account'); ?></a>
         </p>
-
-        <?php if ($role !== 'participant'): ?>
-        <p class="form-help" style="text-align:center;margin-top:1rem;"><?php _e('auth.demo_credentials'); ?></p>
+        <?php if (!$wantAdmin): ?>
+            <p class="form-help" style="text-align:center;margin-top:1rem;">
+                <a href="<?= base_url('login.php?role=admin') ?>"><?php _e('auth.admin_role'); ?></a>
+            </p>
         <?php endif; ?>
     </div>
 </section>

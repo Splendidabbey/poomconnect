@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($errors === []) {
         rate_limit_hit('register', client_ip());
 
-        if ($loggedInUser && $loggedInUser['role'] === 'participant') {
+        if ($loggedInUser) {
             $user = $loggedInUser;
         } else {
             $user = create_or_get_participant_user($fullName, $email, $phone ?: null, $lineId ?: null);
@@ -78,11 +78,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($result['ok']) {
                 set_participant_session((int) $user['id'], $eventId);
-                if (!$loggedInUser || $loggedInUser['role'] === 'participant') {
-                    if (!$loggedInUser) {
-                        $_SESSION['user_id'] = (int) $user['id'];
-                        $_SESSION['user_role'] = 'participant';
-                    }
+                if (!$loggedInUser) {
+                    $_SESSION['user_id'] = (int) $user['id'];
+                    $_SESSION['user_role'] = $user['role'] ?? 'participant';
+                    $_SESSION['participant_user_id'] = (int) $user['id'];
                 }
 
                 if (!empty($result['waitlist'])) {

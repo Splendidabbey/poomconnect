@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/api/_bootstrap.php';
 csrf_verify_or_json();
-require_login(['participant', 'organizer']);
+require_member();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json_response(['success' => false, 'message' => __('api.invalid_request')], 405);

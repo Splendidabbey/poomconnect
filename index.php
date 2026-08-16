@@ -195,6 +195,14 @@ echo render_flash();
                         <p><?php _e('landing.step3_desc'); ?></p>
                     </div>
                 </div>
+                <ol class="event-loop">
+                    <li><?php _e('landing.loop_discover'); ?></li>
+                    <li><?php _e('landing.loop_join'); ?></li>
+                    <li><?php _e('landing.loop_meet'); ?></li>
+                    <li><?php _e('landing.loop_match'); ?></li>
+                    <li><?php _e('landing.loop_host'); ?></li>
+                    <li><?php _e('landing.loop_invite'); ?></li>
+                </ol>
             </div>
 
             <div class="events-panel">
@@ -246,7 +254,7 @@ echo render_flash();
             <h2><?php _e('landing.organizer_title'); ?> <span class="gradient-text"><?php _e('landing.organizer_title_highlight'); ?></span></h2>
             <p><?php _e('landing.organizer_desc'); ?></p>
             <div class="organizer-actions">
-                <a href="<?= base_url('login.php') ?>" class="btn btn-primary btn-lg"><?php _e('landing.start_hosting'); ?></a>
+                <a href="<?= base_url('organizer/create-event.php') ?>" class="btn btn-primary btn-lg"><?php _e('landing.start_hosting'); ?></a>
                 <a href="<?= base_url('index.php#pricing') ?>" class="organizer-learn-more"><?php _e('landing.learn_more'); ?></a>
             </div>
         </div>

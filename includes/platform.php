@@ -373,6 +373,44 @@ function unique_org_slug(string $name): string
     }
 }
 
+function ensure_member_organization(?array $user = null): ?array
+{
+    $user ??= current_user();
+    if (!$user) {
+        return null;
+    }
+
+    $userId = (int) $user['id'];
+    $existing = get_organization_for_user($userId);
+    if ($existing) {
+        return $existing;
+    }
+
+    $name = trim((string) ($user['full_name'] ?? '')) ?: app_name();
+    $orgName = rtrim($name, '.') . ' Events';
+    $slug = unique_org_slug($orgName);
+
+    db()->prepare('INSERT INTO organizations (name, slug, owner_id) VALUES (?, ?, ?)')
+        ->execute([$orgName, $slug, $userId]);
+    $orgId = (int) db()->lastInsertId();
+
+    if (function_exists('add_org_member')) {
+        add_org_member($orgId, $userId, 'owner');
+    }
+    if (function_exists('ensure_org_subscription')) {
+        ensure_org_subscription($orgId);
+    }
+
+    if (($user['role'] ?? '') === 'participant') {
+        db()->prepare("UPDATE users SET role = 'organizer' WHERE id = ? AND role = 'participant'")
+            ->execute([$userId]);
+        $_SESSION['user_role'] = 'organizer';
+        current_user(true);
+    }
+
+    return get_organization_for_user($userId);
+}
+
 function event_spots_available(int $eventId): int
 {
     $event = get_event_by_id($eventId);
@@ -993,7 +1031,7 @@ function manual_checkin_participant(int $eventId, int $userId): bool
 
 function participant_session_user_id(): int
 {
-    if (is_logged_in() && current_user_role() === 'participant') {
+    if (is_logged_in()) {
         return (int) current_user()['id'];
     }
 

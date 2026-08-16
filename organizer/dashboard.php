@@ -6,11 +6,11 @@ require_once dirname(__DIR__) . '/config/app.php';
 require_organizer();
 
 $user = current_user();
-$org = get_organization_for_user((int) $user['id']);
+$org = ensure_member_organization($user) ?? get_organization_for_user((int) $user['id']);
 
 if (!$org && !is_admin()) {
     set_flash('error', __('flash.no_organization'));
-    redirect(base_url('login.php'));
+    redirect(member_home_url());
 }
 
 $orgId = $org ? (int) $org['id'] : 0;
