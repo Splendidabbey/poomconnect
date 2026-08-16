@@ -74,7 +74,34 @@ php migrate.php
 
 Confirm production `.env` exists and is not world-readable. Do not regenerate `APP_ENCRYPTION_KEY` after payment gateway credentials have been saved.
 
-## 5. Troubleshooting
+## 5. Pretty URLs (required on nginx)
+
+FTP deploy cannot change nginx. Without this, `https://poomconnect.com/login` returns **404 Not Found** while `https://poomconnect.com/login.php` still works.
+
+In **aaPanel → Website → poomconnect.com → Rewrite**, paste:
+
+```nginx
+location = /robots.txt { rewrite ^ /robots.php last; }
+location = /sitemap.xml { rewrite ^ /sitemap.php last; }
+location = /og-image { rewrite ^ /og-image.php last; }
+
+location = /admin { rewrite ^ /admin/dashboard.php last; }
+location = /admin/ { rewrite ^ /admin/dashboard.php last; }
+location = /organizer { rewrite ^ /organizer/dashboard.php last; }
+location = /organizer/ { rewrite ^ /organizer/dashboard.php last; }
+
+if (!-e $request_filename) {
+    rewrite ^/(.+)/?$ /$1.php last;
+}
+```
+
+Save, then **Reload** nginx. Confirm `/login`, `/events`, `/signup`, and `/admin` load.
+
+If reload fails with `duplicate location`, use **Config** instead and merge `deploy/nginx-pretty-urls.conf` into the existing `location /` block (do not add a second `location /`).
+
+Same rules live in `deploy/aapanel-rewrite.conf`.
+
+## 6. Troubleshooting
 
 **Deploy fails on FTP login (530)**  
 - Recheck `FTP_PASSWORD` in GitHub secrets  
