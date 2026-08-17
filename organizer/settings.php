@@ -86,11 +86,15 @@ echo render_flash();
                 </div>
 
                 <div class="form-group">
-                    <label for="logo">Logo</label>
-                    <?php if (!empty($org['logo'])): ?>
-                        <img src="<?= e(upload_url($org['logo'])) ?>" alt="Logo" style="max-width:80px;margin-bottom:0.5rem;border-radius:8px;">
-                    <?php endif; ?>
-                    <input type="file" id="logo" name="logo" class="input" accept=".jpg,.jpeg,.png,.webp">
+                    <?php
+                    render_file_drop([
+                        'id' => 'logo',
+                        'name' => 'logo',
+                        'label' => 'Logo',
+                        'variant' => 'logo',
+                        'preview' => !empty($org['logo']) ? upload_url($org['logo']) : null,
+                    ]);
+                    ?>
                 </div>
 
                 <div class="form-group">

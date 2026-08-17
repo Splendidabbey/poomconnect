@@ -187,8 +187,15 @@ echo render_flash();
                     <?= csrf_field() ?>
                     <input type="hidden" name="event_id" value="<?= $eventId ?>">
                     <div class="form-group">
-                        <label for="slip_image"><?php _e('pay_page.slip_label'); ?></label>
-                        <input type="file" id="slip_image" name="slip_image" class="input" accept=".jpg,.jpeg,.png,.webp" required>
+                        <?php
+                        render_file_drop([
+                            'id' => 'slip_image',
+                            'name' => 'slip_image',
+                            'label' => __('pay_page.slip_label'),
+                            'variant' => 'slip',
+                            'required' => true,
+                        ]);
+                        ?>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block"><?php _e('pay_page.upload_btn'); ?></button>
                 </form>

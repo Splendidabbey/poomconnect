@@ -65,7 +65,13 @@ require_once APP_ROOT . '/includes/header.php';
             <input type="hidden" name="room" value="<?= $roomId ?>">
             <textarea name="body" class="textarea" rows="2" placeholder="<?= e(__('chat.placeholder')) ?>"></textarea>
             <div class="chat-compose-actions">
-                <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" class="input">
+                <?php
+                render_file_drop([
+                    'name' => 'image',
+                    'id' => 'chat-image',
+                    'variant' => 'attach',
+                ]);
+                ?>
                 <button type="submit" class="btn btn-primary"><?php _e('chat.send'); ?></button>
             </div>
         </form>

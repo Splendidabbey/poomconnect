@@ -65,9 +65,16 @@ echo render_flash();
             <form method="post" enctype="multipart/form-data">
                 <?= csrf_field() ?>
                 <div class="form-group"><label><?php _e('organizer.org_name'); ?></label><input class="input" name="name" required value="<?= e($org['name']) ?>"></div>
-                <div class="form-group"><label>Logo</label>
-                    <?php if (!empty($org['logo'])): ?><img src="<?= e(upload_url($org['logo'])) ?>" style="max-width:80px;display:block;margin-bottom:0.5rem;"><?php endif; ?>
-                    <input type="file" name="logo" class="input" accept=".jpg,.jpeg,.png,.webp">
+                <div class="form-group">
+                    <?php
+                    render_file_drop([
+                        'id' => 'logo',
+                        'name' => 'logo',
+                        'label' => 'Logo',
+                        'variant' => 'logo',
+                        'preview' => !empty($org['logo']) ? upload_url($org['logo']) : null,
+                    ]);
+                    ?>
                 </div>
                 <div class="form-row">
                     <div class="form-group"><label><?php _e('tenant.primary_color'); ?></label><input type="color" name="primary_color" value="<?= e($org['primary_color'] ?? '#6C35FF') ?>"></div>

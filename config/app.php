@@ -36,6 +36,7 @@ init_currency();
 
 require_once APP_ROOT . '/config/database.php';
 require_once APP_ROOT . '/includes/functions.php';
+require_once APP_ROOT . '/includes/file-drop.php';
 require_once APP_ROOT . '/includes/seo.php';
 require_once APP_ROOT . '/includes/content.php';
 require_once APP_ROOT . '/includes/platform.php';

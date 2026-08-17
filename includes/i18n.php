@@ -187,5 +187,9 @@ function js_translations(): array
         'approve_payment' => __('js.approve_payment'),
         'reject_payment' => __('js.reject_payment'),
         'end_event' => __('js.end_event'),
+        'upload_selected' => __('upload.selected'),
+        'upload_files_count' => __('upload.files_count'),
+        'upload_replace' => __('upload.replace'),
+        'upload_drop' => __('upload.drop'),
     ];
 }

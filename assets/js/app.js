@@ -207,6 +207,93 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    document.querySelectorAll('[data-file-drop]').forEach((drop) => {
+        const input = drop.querySelector('.file-drop-input');
+        const preview = drop.querySelector('.file-drop-preview');
+        const title = drop.querySelector('.file-drop-title');
+        const filename = drop.querySelector('.file-drop-filename');
+        const hint = drop.querySelector('.file-drop-hint');
+        if (!input) {
+            return;
+        }
+
+        const interpolate = (template, vars) => Object.keys(vars).reduce(
+            (text, key) => text.replace(':' + key, vars[key]),
+            template || ''
+        );
+
+        const setPreview = (src) => {
+            if (!preview) {
+                return;
+            }
+            let img = preview.querySelector('img');
+            if (!src) {
+                preview.hidden = true;
+                drop.classList.remove('has-preview');
+                return;
+            }
+            if (!img) {
+                img = document.createElement('img');
+                img.alt = '';
+                preview.appendChild(img);
+            }
+            img.src = src;
+            preview.hidden = false;
+            drop.classList.add('has-preview');
+        };
+
+        const describeFiles = (files) => {
+            if (!files.length) {
+                return;
+            }
+            const first = files[0];
+            if (files.length === 1 && first.type.startsWith('image/')) {
+                setPreview(URL.createObjectURL(first));
+            } else if (files.length === 1) {
+                setPreview('');
+            }
+            if (title) {
+                title.textContent = files.length
+                    ? (i18n.upload_replace || 'Replace image')
+                    : (i18n.upload_drop || 'Drop an image here, or browse');
+            }
+            if (filename) {
+                filename.hidden = false;
+                filename.textContent = files.length > 1
+                    ? interpolate(i18n.upload_files_count || ':count files selected', { count: String(files.length) })
+                    : interpolate(i18n.upload_selected || ':name selected', { name: first.name });
+            }
+            if (hint) {
+                hint.hidden = true;
+            }
+        };
+
+        ['dragenter', 'dragover'].forEach((eventName) => {
+            drop.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                drop.classList.add('is-dragover');
+            });
+        });
+        drop.addEventListener('dragleave', (e) => {
+            if (!drop.contains(e.relatedTarget)) {
+                drop.classList.remove('is-dragover');
+            }
+        });
+        drop.addEventListener('drop', (e) => {
+            e.preventDefault();
+            drop.classList.remove('is-dragover');
+            const files = e.dataTransfer?.files;
+            if (!files || files.length === 0) {
+                return;
+            }
+            input.files = files;
+            describeFiles(Array.from(files));
+        });
+        input.addEventListener('change', () => {
+            describeFiles(Array.from(input.files || []));
+        });
+    });
+
     const countdownEl = document.querySelector('[data-countdown]');
     if (countdownEl) {
         let seconds = parseInt(countdownEl.dataset.seconds || '300', 10);

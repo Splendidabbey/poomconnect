@@ -29,11 +29,15 @@ $isEdit = (bool) $event;
     </div>
 
     <div class="form-group">
-        <label for="cover_image"><?php _e('organizer.cover_image'); ?></label>
-        <?php if (!empty($values['cover_image'])): ?>
-            <img src="<?= e(upload_url($values['cover_image'])) ?>" alt="" class="form-preview-image">
-        <?php endif; ?>
-        <input type="file" id="cover_image" name="cover_image" class="input" accept=".jpg,.jpeg,.png,.webp">
+        <?php
+        render_file_drop([
+            'id' => 'cover_image',
+            'name' => 'cover_image',
+            'label' => __('organizer.cover_image'),
+            'variant' => 'cover',
+            'preview' => !empty($values['cover_image']) ? upload_url($values['cover_image']) : null,
+        ]);
+        ?>
     </div>
 
     <?php if ($isEdit): ?>
@@ -48,14 +52,28 @@ $isEdit = (bool) $event;
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
-        <input type="file" id="gallery_images" name="gallery_images[]" class="input" accept=".jpg,.jpeg,.png,.webp" multiple>
-        <p class="form-help"><?php _e('event_form.gallery_help'); ?></p>
+        <?php
+        render_file_drop([
+            'id' => 'gallery_images',
+            'name' => 'gallery_images[]',
+            'variant' => 'image',
+            'multiple' => true,
+            'help' => __('event_form.gallery_help'),
+        ]);
+        ?>
     </div>
     <?php else: ?>
     <div class="form-group">
-        <label for="gallery_images"><?php _e('event_form.gallery'); ?></label>
-        <input type="file" id="gallery_images" name="gallery_images[]" class="input" accept=".jpg,.jpeg,.png,.webp" multiple>
-        <p class="form-help"><?php _e('event_form.gallery_help'); ?></p>
+        <?php
+        render_file_drop([
+            'id' => 'gallery_images',
+            'name' => 'gallery_images[]',
+            'label' => __('event_form.gallery'),
+            'variant' => 'image',
+            'multiple' => true,
+            'help' => __('event_form.gallery_help'),
+        ]);
+        ?>
     </div>
     <?php endif; ?>
 </div>
@@ -182,11 +200,15 @@ $isEdit = (bool) $event;
     </div>
 
     <div class="form-group">
-        <label for="og_image"><?php _e('event_form.og_image'); ?></label>
-        <?php if (!empty($values['og_image'])): ?>
-            <img src="<?= e(upload_url($values['og_image'])) ?>" alt="" class="form-preview-image">
-        <?php endif; ?>
-        <input type="file" id="og_image" name="og_image" class="input" accept=".jpg,.jpeg,.png,.webp">
+        <?php
+        render_file_drop([
+            'id' => 'og_image',
+            'name' => 'og_image',
+            'label' => __('event_form.og_image'),
+            'variant' => 'banner',
+            'preview' => !empty($values['og_image']) ? upload_url($values['og_image']) : null,
+        ]);
+        ?>
     </div>
 </div>
 
@@ -194,11 +216,15 @@ $isEdit = (bool) $event;
     <h3 class="form-section-title"><?php _e('event_form.builder'); ?></h3>
 
     <div class="form-group">
-        <label for="banner_image"><?php _e('event_form.banner'); ?></label>
-        <?php if (!empty($values['banner_image'])): ?>
-            <img src="<?= e(upload_url($values['banner_image'])) ?>" alt="" class="form-preview-image">
-        <?php endif; ?>
-        <input type="file" id="banner_image" name="banner_image" class="input" accept=".jpg,.jpeg,.png,.webp">
+        <?php
+        render_file_drop([
+            'id' => 'banner_image',
+            'name' => 'banner_image',
+            'label' => __('event_form.banner'),
+            'variant' => 'banner',
+            'preview' => !empty($values['banner_image']) ? upload_url($values['banner_image']) : null,
+        ]);
+        ?>
     </div>
 
     <div class="form-row">

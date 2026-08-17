@@ -33,11 +33,15 @@ $isEdit = (bool) $post;
     </div>
 
     <div class="form-group">
-        <label for="cover_image"><?php _e('blog_form.cover'); ?></label>
-        <?php if (!empty($values['cover_image'])): ?>
-            <img src="<?= e(upload_url($values['cover_image'])) ?>" alt="" class="form-preview-image">
-        <?php endif; ?>
-        <input type="file" id="cover_image" name="cover_image" class="input" accept=".jpg,.jpeg,.png,.webp">
+        <?php
+        render_file_drop([
+            'id' => 'cover_image',
+            'name' => 'cover_image',
+            'label' => __('blog_form.cover'),
+            'variant' => 'cover',
+            'preview' => !empty($values['cover_image']) ? upload_url($values['cover_image']) : null,
+        ]);
+        ?>
     </div>
 </div>
 

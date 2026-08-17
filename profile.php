@@ -174,12 +174,26 @@ echo render_flash();
             <?= csrf_field() ?>
             <div class="form-row">
                 <div class="form-group">
-                    <label><?php _e('profile.avatar'); ?></label>
-                    <input type="file" name="avatar" class="input" accept=".jpg,.jpeg,.png,.webp">
+                    <?php
+                    render_file_drop([
+                        'id' => 'avatar',
+                        'name' => 'avatar',
+                        'label' => __('profile.avatar'),
+                        'variant' => 'avatar',
+                        'preview' => !empty($profile['avatar']) ? upload_url($profile['avatar']) : null,
+                    ]);
+                    ?>
                 </div>
                 <div class="form-group">
-                    <label><?php _e('profile.cover_image'); ?></label>
-                    <input type="file" name="cover_image" class="input" accept=".jpg,.jpeg,.png,.webp">
+                    <?php
+                    render_file_drop([
+                        'id' => 'cover_image',
+                        'name' => 'cover_image',
+                        'label' => __('profile.cover_image'),
+                        'variant' => 'cover',
+                        'preview' => !empty($profile['cover_image']) ? upload_url($profile['cover_image']) : null,
+                    ]);
+                    ?>
                 </div>
             </div>
             <div class="form-group">
