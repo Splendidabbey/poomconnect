@@ -29,6 +29,19 @@ $platformPages = array_merge($contentPages, ['login.php', 'signup.php', 'chat.ph
 $loadContentCss = in_array($currentPath, $contentPages, true);
 $loadPlatformCss = in_array($currentPath, $platformPages, true) || str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/participant/') || str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/organizer/');
 $navUnreadCount = is_logged_in() ? unread_notification_count((int) current_user()['id']) : 0;
+$navUser = is_logged_in() ? current_user() : null;
+$navUserName = '';
+$navUserFirst = '';
+$navAvatarUrl = default_avatar('P');
+if ($navUser) {
+    $navUserName = trim((string) ($navUser['full_name'] ?? ''));
+    if ($navUserName === '') {
+        $navUserName = (string) ($navUser['email'] ?? __('nav.account'));
+    }
+    $navUserFirst = explode(' ', $navUserName)[0];
+    $navAvatarUrl = !empty($navUser['avatar']) ? upload_url((string) $navUser['avatar']) : default_avatar($navUserName);
+    $bodyClass = trim($bodyClass . ' is-member');
+}
 $tenantOrg = current_tenant();
 $brandName = $tenantOrg ? org_brand_name($tenantOrg) : app_name();
 $brandLogoMd = $tenantOrg && !empty($tenantOrg['logo']) ? org_logo_url($tenantOrg) : brand_logo('md');
@@ -112,7 +125,7 @@ $brandLogoNav = $tenantOrg && !empty($tenantOrg['logo']) ? org_logo_url($tenantO
 <a href="#main" class="skip-link"><?= e(__('nav.skip_to_content')) ?></a>
 <?php if (!$hideNav): ?>
 <header class="navbar<?= $isLanding ? ' navbar-landing' : '' ?>">
-    <div class="container navbar-layout<?= $isLanding ? ' navbar-layout-landing' : '' ?>">
+    <div class="container navbar-layout<?= $isLanding ? ' navbar-layout-landing' : ' navbar-layout-app' ?>">
         <?php if ($isLanding): ?>
         <a href="<?= $tenantOrg ? e(org_public_url($tenantOrg)) : base_url('index.php') ?>" class="logo nav-brand">
             <img src="<?= e($brandLogoNav) ?>" alt="<?= e($brandName) ?>" class="logo-image logo-nav">
@@ -147,20 +160,31 @@ $brandLogoNav = $tenantOrg && !empty($tenantOrg['logo']) ? org_logo_url($tenantO
             </nav>
             <div class="nav-actions" data-nav-actions>
                 <div class="nav-auth nav-auth-stack">
-                    <?php require APP_ROOT . '/includes/nav-auth-landing.php'; ?>
+                    <?php $navAccountMode = 'list'; require APP_ROOT . '/includes/nav-auth-landing.php'; ?>
                 </div>
                 <a href="<?= base_url('organizer/create-event.php') ?>" class="btn btn-primary nav-cta nav-cta-block"><?php _e('nav.host_event'); ?></a>
             </div>
         </div>
         <?php else: ?>
-        <div class="navbar-shell">
-            <a href="<?= $tenantOrg ? e(org_public_url($tenantOrg)) : base_url('index.php') ?>" class="logo">
-                <img src="<?= e($brandLogoMd) ?>" alt="<?= e($brandName) ?>" class="logo-image logo-image-md">
-                <img src="<?= e($brandLogoSm) ?>" alt="<?= e($brandName) ?>" class="logo-image logo-image-sm">
-            </a>
+        <a href="<?= $tenantOrg ? e(org_public_url($tenantOrg)) : base_url('index.php') ?>" class="logo nav-app-brand">
+            <img src="<?= e($brandLogoMd) ?>" alt="<?= e($brandName) ?>" class="logo-image logo-image-md">
+            <img src="<?= e($brandLogoSm) ?>" alt="<?= e($brandName) ?>" class="logo-image logo-image-sm">
+        </a>
 
+        <nav class="nav-links nav-links-primary nav-app-desktop" aria-label="<?= e(__('nav.main_navigation')) ?>">
+            <?php require APP_ROOT . '/includes/nav-app-primary.php'; ?>
+        </nav>
+
+        <div class="nav-end nav-app-desktop">
+            <?php $navUtilitiesPlacement = 'bar'; require APP_ROOT . '/includes/nav-utilities.php'; ?>
+            <div class="nav-auth">
+                <?php $navAccountMode = 'dropdown'; require APP_ROOT . '/includes/nav-auth-landing.php'; ?>
+            </div>
+            <a href="<?= base_url('organizer/create-event.php') ?>" class="btn btn-primary btn-sm nav-cta"><?php _e('nav.host'); ?></a>
+        </div>
+
+        <div class="navbar-shell navbar-app-mobile">
             <?php $navUtilitiesPlacement = 'shell'; require APP_ROOT . '/includes/nav-utilities.php'; ?>
-
             <button class="nav-toggle" type="button"
                     aria-label="<?= e(__('nav.toggle_menu')) ?>"
                     aria-expanded="false"
@@ -172,29 +196,10 @@ $brandLogoNav = $tenantOrg && !empty($tenantOrg['logo']) ? org_logo_url($tenantO
 
         <div class="nav-mobile-drawer" id="nav-mobile-drawer" data-nav-drawer>
             <nav class="nav-links" data-nav-menu aria-label="<?= e(__('nav.main_navigation')) ?>">
-                <a href="<?= base_url('events.php') ?>" class="<?= $currentPath === 'events.php' ? 'active' : '' ?>"><?php _e('nav.events'); ?></a>
-                <a href="<?= base_url('blog.php') ?>" class="<?= in_array($currentPath, ['blog.php', 'article.php'], true) ? 'active' : '' ?>"><?php _e('nav.blog'); ?></a>
-                <a href="<?= base_url('index.php#how-it-works') ?>"><?php _e('nav.how_it_works'); ?></a>
-                <a href="<?= base_url('index.php#organizers') ?>"><?php _e('nav.host'); ?></a>
-                <a href="<?= base_url('index.php#pricing') ?>"><?php _e('nav.pricing'); ?></a>
+                <?php require APP_ROOT . '/includes/nav-app-primary.php'; ?>
                 <?php if (is_logged_in()): ?>
-                    <?php if (is_admin()): ?>
-                        <a href="<?= base_url('admin/dashboard.php') ?>"><?php _e('nav.admin'); ?></a>
-                    <?php endif; ?>
-                    <a href="<?= base_url('my-events.php') ?>"><?php _e('nav.my_events'); ?></a>
-                    <a href="<?= base_url('participant/matches.php') ?>"><?php _e('nav.matches'); ?></a>
-                    <a href="<?= base_url('chat.php') ?>"><?php _e('nav.chat'); ?></a>
-                    <a href="<?= base_url('community/groups.php') ?>"><?php _e('sidebar.community'); ?></a>
-                    <a href="<?= base_url('notifications.php') ?>" class="nav-link-badge">
-                        <?php _e('nav.notifications'); ?>
-                        <?php if ($navUnreadCount > 0): ?>
-                            <span class="nav-badge" aria-label="<?= e(__('notify.unread_count', ['count' => $navUnreadCount])) ?>"><?= $navUnreadCount > 99 ? '99+' : $navUnreadCount ?></span>
-                        <?php endif; ?>
-                    </a>
-                    <a href="<?= base_url('organizer/dashboard.php') ?>"><?php _e('nav.host_studio'); ?></a>
-                    <a href="<?= base_url('loyalty.php') ?>"><?php _e('nav.loyalty'); ?></a>
-                    <a href="<?= base_url('profile.php') ?>"><?php _e('nav.profile'); ?></a>
-                    <a href="<?= base_url('logout.php') ?>"><?php _e('nav.logout'); ?></a>
+                    <span class="nav-drawer-label"><?php _e('nav.account'); ?></span>
+                    <?php $navAccountMode = 'list'; require APP_ROOT . '/includes/nav-account-links.php'; ?>
                 <?php else: ?>
                     <a href="<?= base_url('login.php') ?>"><?php _e('nav.login'); ?></a>
                     <a href="<?= base_url('signup.php') ?>"><?php _e('nav.signup'); ?></a>

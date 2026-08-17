@@ -66,6 +66,7 @@ return [
         'host' => 'Mag-host',
         'host_studio' => 'Host studio',
         'matches' => 'Mga match',
+        'account' => 'Account',
         'toggle_menu' => 'I-toggle ang menu',
         'language' => 'Wika',
         'currency' => 'Salapi',

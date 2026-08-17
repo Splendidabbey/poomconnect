@@ -66,6 +66,7 @@ return [
         'host' => '主催',
         'host_studio' => '主催スタジオ',
         'matches' => 'マッチ',
+        'account' => 'アカウント',
         'toggle_menu' => 'メニューの切り替え',
         'language' => '言語',
         'currency' => '通貨',

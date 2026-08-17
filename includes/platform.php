@@ -666,7 +666,7 @@ function get_invitation_by_token(string $token): ?array
 function get_user_registrations(int $userId): array
 {
     $stmt = db()->prepare(
-        "SELECT ep.*, e.title, e.slug, e.event_date, e.start_time, e.location, e.city, e.ticket_price, e.status AS event_status
+        "SELECT ep.*, e.title, e.slug, e.event_date, e.start_time, e.location, e.city, e.ticket_price, e.status AS event_status, e.cover_image
          FROM event_participants ep
          JOIN events e ON e.id = ep.event_id
          WHERE ep.user_id = ? AND ep.registration_status != 'cancelled'

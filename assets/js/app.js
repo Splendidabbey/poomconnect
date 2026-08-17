@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (!open) {
-            document.querySelectorAll('details.lang-switch[open]').forEach((details) => {
+            document.querySelectorAll('details[data-nav-details][open]').forEach((details) => {
                 details.open = false;
             });
         }
@@ -186,12 +186,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.querySelectorAll('details.lang-switch').forEach((details) => {
+    document.querySelectorAll('details[data-nav-details]').forEach((details) => {
         details.addEventListener('toggle', () => {
             if (!details.open) {
                 return;
             }
-            document.querySelectorAll('details.lang-switch').forEach((other) => {
+            document.querySelectorAll('details[data-nav-details]').forEach((other) => {
                 if (other !== details) {
                     other.open = false;
                 }
@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.addEventListener('click', (e) => {
-        document.querySelectorAll('details.lang-switch[open]').forEach((details) => {
+        document.querySelectorAll('details[data-nav-details][open]').forEach((details) => {
             if (!details.contains(e.target)) {
                 details.open = false;
             }

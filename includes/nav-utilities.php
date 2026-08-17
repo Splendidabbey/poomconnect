@@ -12,7 +12,7 @@ $locales = supported_locales();
 $currentCurrency = current_currency();
 ?>
 <div class="nav-utilities nav-utilities--<?= e($navUtilitiesPlacement) ?>" data-nav-utilities>
-    <details class="lang-switch lang-switch--nav">
+    <details class="lang-switch lang-switch--nav" data-nav-details>
         <summary class="nav-pref-trigger" aria-label="<?= e(__('nav.language')) ?>">
             <svg class="nav-pref-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
                 <circle cx="12" cy="12" r="10"/>
@@ -33,7 +33,7 @@ $currentCurrency = current_currency();
         </div>
     </details>
 
-    <details class="currency-switch currency-switch--nav">
+    <details class="currency-switch currency-switch--nav" data-nav-details>
         <summary class="nav-pref-trigger" aria-label="<?= e(__('nav.currency')) ?>">
             <span class="nav-pref-icon nav-pref-icon--text" aria-hidden="true"><?= e(currency_symbol($currentCurrency)) ?></span>
             <span class="nav-pref-label"><?= e($currentCurrency) ?></span>

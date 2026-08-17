@@ -66,6 +66,7 @@ return [
         'host' => 'จัดอีเวนต์',
         'host_studio' => 'สตูดิโอโฮสต์',
         'matches' => 'แมตช์',
+        'account' => 'บัญชี',
         'toggle_menu' => 'เปิด/ปิดเมนู',
         'language' => 'ภาษา',
         'currency' => 'สกุลเงิน',

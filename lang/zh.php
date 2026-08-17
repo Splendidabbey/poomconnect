@@ -66,6 +66,7 @@ return [
         'host' => '主办',
         'host_studio' => '主办工作台',
         'matches' => '匹配',
+        'account' => '账户',
         'toggle_menu' => '切换菜单',
         'language' => '语言',
         'currency' => '货币',
