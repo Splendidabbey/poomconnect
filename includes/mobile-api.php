@@ -183,6 +183,10 @@ function mobile_require_auth(array $roles = []): array
 
 function mobile_user_payload(array $user): array
 {
+    $org = function_exists('get_organization_for_user')
+        ? get_organization_for_user((int) $user['id'])
+        : null;
+
     return [
         'id' => (int) $user['id'],
         'full_name' => $user['full_name'],
@@ -190,10 +194,13 @@ function mobile_user_payload(array $user): array
         'role' => $user['role'],
         'phone' => $user['phone'] ?? null,
         'avatar' => !empty($user['avatar']) ? upload_url($user['avatar']) : default_avatar($user['full_name'] ?? ''),
+        'cover' => !empty($user['cover_image']) ? upload_url($user['cover_image']) : null,
         'city' => $user['city'] ?? null,
         'bio' => $user['bio'] ?? null,
         'verified' => !empty($user['verified_at']),
         'is_vip' => !empty($user['is_vip']),
+        'is_host' => in_array($user['role'] ?? '', ['organizer', 'admin', 'super_admin'], true) || $org !== null,
+        'points' => (int) ($user['loyalty_points'] ?? 0),
     ];
 }
 
@@ -236,7 +243,114 @@ function mobile_event_payload(array $event, ?int $userId = null): array
         'category_name' => $event['category_name'] ?? null,
         'dress_code' => $event['dress_code'] ?? null,
         'rules' => $event['rules'] ?? null,
+        'round_duration' => (int) ($event['round_duration'] ?? 300),
+        'is_featured' => ($event['status'] ?? '') === 'live',
         'registration' => $registration,
+    ];
+}
+
+function mobile_require_host(): array
+{
+    $user = mobile_require_auth();
+    $org = ensure_member_organization($user);
+    if (!$org && !is_admin()) {
+        mobile_json_response(['success' => false, 'message' => 'Host studio is unavailable'], 403);
+    }
+
+    $fresh = current_user(true);
+
+    return [
+        'user' => is_array($fresh) ? $fresh : $user,
+        'org' => $org,
+    ];
+}
+
+function mobile_get_event_for_host(int $eventId): ?array
+{
+    $event = get_event_by_id($eventId);
+    $user = current_user();
+    if (!$event || !$user || !user_can_manage_event((int) $user['id'], $event)) {
+        return null;
+    }
+
+    return $event;
+}
+
+function mobile_get_payment_for_host(int $paymentId): ?array
+{
+    $user = current_user();
+    if (!$user) {
+        return null;
+    }
+
+    $org = get_organization_for_user((int) $user['id']);
+    $sql = 'SELECT p.*, e.organization_id FROM payments p JOIN events e ON e.id = p.event_id WHERE p.id = ?';
+    $stmt = db()->prepare($sql);
+    $stmt->execute([$paymentId]);
+    $payment = $stmt->fetch();
+    if (!$payment) {
+        return null;
+    }
+
+    if (!is_admin() && (!$org || (int) $payment['organization_id'] !== (int) $org['id'])) {
+        return null;
+    }
+
+    return $payment;
+}
+
+function mobile_match_payload(array $row, int $userId): array
+{
+    $eventId = (int) $row['event_id'];
+    $partnerId = (int) $row['partner_id'];
+    $type = (string) ($row['match_type'] ?? 'like');
+    $room = get_chat_room_for_users($eventId, $userId, $partnerId);
+
+    return [
+        'id' => (int) $row['id'],
+        'event_id' => $eventId,
+        'event_title' => $row['event_title'] ?? null,
+        'partner_id' => $partnerId,
+        'partner_name' => $row['partner_name'] ?? '',
+        'partner_avatar' => !empty($row['partner_avatar']) ? upload_url($row['partner_avatar']) : default_avatar($row['partner_name'] ?? ''),
+        'bucket' => $type === 'like' ? 'mutual' : $type,
+        'matched_at' => $row['created_at'] ?? null,
+        'conversation_id' => $room ? (int) $room['id'] : null,
+    ];
+}
+
+function mobile_conversation_payload(array $room, int $userId): array
+{
+    $last = db()->prepare(
+        'SELECT body, created_at, sender_id FROM chat_messages WHERE room_id = ? ORDER BY id DESC LIMIT 1'
+    );
+    $last->execute([(int) $room['id']]);
+    $message = $last->fetch() ?: null;
+
+    return [
+        'id' => (int) $room['id'],
+        'match_id' => (int) $room['id'],
+        'event_id' => (int) $room['event_id'],
+        'event_title' => $room['event_title'] ?? '',
+        'partner_id' => (int) $room['partner_id'],
+        'partner_name' => $room['partner_name'] ?? '',
+        'partner_avatar' => !empty($room['partner_avatar']) ? upload_url($room['partner_avatar']) : default_avatar($room['partner_name'] ?? ''),
+        'last_message' => $message['body'] ?? '',
+        'last_message_at' => $message['created_at'] ?? ($room['unlocked_at'] ?? null),
+        'unread_count' => 0,
+    ];
+}
+
+function mobile_message_payload(array $row, int $userId): array
+{
+    return [
+        'id' => (int) $row['id'],
+        'conversation_id' => (int) $row['room_id'],
+        'sender_id' => (int) $row['sender_id'],
+        'body' => (string) ($row['body'] ?? ''),
+        'sent_at' => $row['created_at'] ?? null,
+        'is_mine' => (int) $row['sender_id'] === $userId,
+        'status' => 'sent',
     ];
 }
 

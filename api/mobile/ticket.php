@@ -39,12 +39,16 @@ mobile_json_response([
     'ticket' => [
         'id' => (int) $ticket['id'],
         'event_id' => (int) $ticket['event_id'],
+        'member_id' => (int) $ticket['user_id'],
         'event_title' => $ticket['event_title'],
         'event_date' => $ticket['event_date'],
         'start_time' => $ticket['start_time'],
         'location' => $ticket['location'] ?? '',
         'participant_name' => $user['full_name'],
+        'code' => $ticket['qr_token'],
         'qr_token' => $ticket['qr_token'],
+        'status' => !empty($ticket['checked_in']) ? 'used' : 'valid',
+        'issued_at' => $ticket['created_at'] ?? null,
         'checked_in' => (bool) $ticket['checked_in'],
     ],
 ]);

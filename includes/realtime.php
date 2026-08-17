@@ -238,9 +238,21 @@ function get_live_state_payload(int $eventId, int $userId): array
                 'name' => $partner['full_name'] ?? '',
                 'avatar' => !empty($partner['avatar']) ? upload_url($partner['avatar']) : default_avatar($partner['full_name'] ?? ''),
                 'occupation' => $partner['occupation'] ?? '',
+                'city' => $partner['city'] ?? '',
+                'headline' => $partner['occupation'] ?? ($partner['bio'] ?? ''),
             ];
+
+            $voteStmt = db()->prepare(
+                'SELECT vote FROM match_votes WHERE event_id = ? AND voter_id = ? AND target_id = ? ORDER BY id DESC LIMIT 1'
+            );
+            $voteStmt->execute([$eventId, $userId, $partnerId]);
+            $payload['current_vote'] = $voteStmt->fetchColumn() ?: null;
         }
     }
+
+    $maxRound = db()->prepare('SELECT COALESCE(MAX(round_number), 0) FROM rounds WHERE event_id = ?');
+    $maxRound->execute([$eventId]);
+    $payload['total_rounds'] = max(8, (int) $maxRound->fetchColumn(), $payload['round']);
 
     return $payload;
 }
@@ -364,6 +376,7 @@ function get_user_chat_rooms(int $userId): array
     $stmt = db()->prepare(
         'SELECT r.*, e.title AS event_title,
                 CASE WHEN r.user_a = ? THEN ub.full_name ELSE ua.full_name END AS partner_name,
+                CASE WHEN r.user_a = ? THEN ub.avatar ELSE ua.avatar END AS partner_avatar,
                 CASE WHEN r.user_a = ? THEN r.user_b ELSE r.user_a END AS partner_id
          FROM chat_rooms r
          JOIN events e ON e.id = r.event_id
@@ -372,7 +385,7 @@ function get_user_chat_rooms(int $userId): array
          WHERE r.unlocked_at IS NOT NULL AND (r.user_a = ? OR r.user_b = ?)
          ORDER BY r.unlocked_at DESC'
     );
-    $stmt->execute([$userId, $userId, $userId, $userId]);
+    $stmt->execute([$userId, $userId, $userId, $userId, $userId]);
 
     return $stmt->fetchAll();
 }

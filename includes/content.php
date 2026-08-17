@@ -374,7 +374,7 @@ function search_events(array $filters = [], int $limit = 50): array
             FROM events e
             JOIN organizations o ON o.id = e.organization_id
             LEFT JOIN categories c ON c.id = e.category_id
-            WHERE e.status IN ('published', 'live')";
+            WHERE e.status IN ('published', 'live', 'paused')";
     $params = [];
 
     if (!empty($filters['q'])) {
@@ -402,7 +402,7 @@ function search_events(array $filters = [], int $limit = 50): array
         $sql .= ' AND e.event_date >= ?';
         $params[] = $filters['date_from'];
     } else {
-        $sql .= ' AND e.event_date >= CURDATE()';
+        $sql .= " AND (e.event_date >= CURDATE() OR e.status IN ('live', 'paused'))";
     }
 
     if (!empty($filters['date_to'])) {
