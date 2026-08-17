@@ -33,7 +33,7 @@ final class PrettyUrlTest extends TestCase
             'sitemap' => ['sitemap.php', 'sitemap.xml'],
             'robots' => ['robots.php', 'robots.txt'],
             'event slug' => ['event.php?slug=meetup', 'event?slug=meetup'],
-            'api endpoint' => ['api/approve-payment.php', 'api/approve-payment'],
+            'api endpoint' => ['api/approve-payment.php', 'api/approve-payment.php'],
             'asset unchanged' => ['assets/css/style.css', 'assets/css/style.css'],
             'already pretty' => ['events', 'events'],
             'empty' => ['', ''],
@@ -56,7 +56,7 @@ final class PrettyUrlTest extends TestCase
         $this->restorePrettyUrlEnv($previousEnv, $previousServer);
     }
 
-    public function testPrettyUrlsDefaultOffOnNginx(): void
+    public function testPrettyUrlsDefaultOn(): void
     {
         $previousEnv = $_ENV['PRETTY_URLS'] ?? null;
         $previousServer = $_SERVER['SERVER_SOFTWARE'] ?? null;
@@ -64,16 +64,22 @@ final class PrettyUrlTest extends TestCase
         unset($_ENV['PRETTY_URLS']);
         putenv('PRETTY_URLS');
         $_SERVER['SERVER_SOFTWARE'] = 'nginx/1.24.0';
-        $this->assertFalse(pretty_urls_enabled());
-        $this->assertSame('login.php', public_url_path('login.php'));
-        $this->assertSame('login.php?role=admin', public_url_path('login.php?role=admin'));
-        $this->assertSame('', public_url_path('index.php'));
-
-        $_SERVER['SERVER_SOFTWARE'] = 'Apache/2.4.54 (Unix)';
         $this->assertTrue(pretty_urls_enabled());
         $this->assertSame('login', public_url_path('login.php'));
+        $this->assertSame('', public_url_path('index.php'));
 
         $this->restorePrettyUrlEnv($previousEnv, $previousServer);
+    }
+
+    public function testPrettyDirWrapperMapsToPhpFile(): void
+    {
+        require_once APP_ROOT . '/includes/pretty-dir-dispatch.php';
+
+        $this->assertFileExists(APP_ROOT . '/login/index.php');
+        $this->assertSame(
+            realpath(APP_ROOT . '/login.php'),
+            pretty_dir_dispatch_target(APP_ROOT . '/login/index.php', APP_ROOT)
+        );
     }
 
     private function restorePrettyUrlEnv(mixed $previousEnv, mixed $previousServer): void

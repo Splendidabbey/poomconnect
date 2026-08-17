@@ -57,6 +57,9 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist
 
+      - name: Build pretty URL directories
+        run: php scripts/build-pretty-dirs.php
+
       - name: Configure environment
         run: |
           cat > .env <<EOF

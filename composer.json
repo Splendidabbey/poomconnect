@@ -23,7 +23,8 @@
     },
     "scripts": {
         "test": "phpunit",
-        "migrate": "php migrate.php"
+        "migrate": "php migrate.php",
+        "pretty-dirs": "php scripts/build-pretty-dirs.php"
     },
     "config": {
         "optimize-autoloader": true,

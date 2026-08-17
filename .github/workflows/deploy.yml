@@ -41,6 +41,11 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
 
+      - name: Build pretty URL directories
+        run: |
+          php scripts/build-pretty-dirs.php
+          git add -A
+
       - name: Sync files over FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:

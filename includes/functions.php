@@ -48,6 +48,15 @@ function pretty_url_path(string $path): string
         return 'robots.txt' . $query . $fragment;
     }
 
+    // API endpoints stay as .php so POST bodies are not lost on a directory redirect.
+    if (str_starts_with($path, 'api/')) {
+        if (!str_ends_with($path, '.php') && !str_contains(basename($path), '.')) {
+            $path .= '.php';
+        }
+
+        return $path . $query . $fragment;
+    }
+
     if (str_ends_with($path, '.php')) {
         $path = substr($path, 0, -4);
     }
@@ -66,9 +75,8 @@ function pretty_url_path(string $path): string
 }
 
 /**
- * Pretty paths (/login) need Apache rewrite or a working nginx snippet.
- * Production aaPanel is nginx without that snippet, so default to .php URLs there.
- * Set PRETTY_URLS=true in .env after nginx rewrite is confirmed.
+ * Extensionless page URLs (/login). Disable with PRETTY_URLS=false.
+ * On nginx these resolve through generated folders like login/index.php.
  */
 function pretty_urls_enabled(): bool
 {
@@ -77,12 +85,7 @@ function pretty_urls_enabled(): bool
         return in_array(strtolower($raw), ['1', 'true', 'yes', 'on'], true);
     }
 
-    $software = (string) ($_SERVER['SERVER_SOFTWARE'] ?? '');
-    if (stripos($software, 'nginx') !== false) {
-        return false;
-    }
-
-    return stripos($software, 'apache') !== false;
+    return true;
 }
 
 function public_url_path(string $path): string

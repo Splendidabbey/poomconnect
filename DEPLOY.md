@@ -74,23 +74,13 @@ php migrate.php
 
 Confirm production `.env` exists and is not world-readable. Do not regenerate `APP_ENCRYPTION_KEY` after payment gateway credentials have been saved.
 
-## 5. Pretty URLs (nginx)
+## 5. Pretty URLs
 
-On nginx, links stay as `.php` (`/login.php`) until rewrite works. Apache (local MAMP) still uses `/login`.
+Pages are linked without `.php` (`/login`, `/events`). Each page has a folder wrapper (`login/index.php`) so nginx can serve those URLs without rewrite.
 
-To make `/login` work, open **aaPanel → Website → poomconnect.com → Rewrite**, delete any previous rules, and paste **only**:
+If `/login` still 404s after deploy, FTP likely could not create folders. Run the chown commands in section 4 and redeploy.
 
-```nginx
-if (!-e $request_filename) {
-    rewrite ^/(.+)/?$ /$1.php last;
-}
-```
-
-Save. If aaPanel shows a red nginx error, the rules were not applied — do not keep `location { }` blocks in Rewrite (aaPanel already wraps this file inside `location /`).
-
-Then **Reload** nginx and open `/login`. When that works, set `PRETTY_URLS=true` in the server `.env`.
-
-Full `location` rules belong in **Config**, not Rewrite: see `deploy/nginx-pretty-urls.conf`.
+Optional nginx rewrite (robots.txt / sitemap.xml) is in `deploy/aapanel-rewrite.conf`.
 
 ## 6. Troubleshooting
 
