@@ -64,13 +64,13 @@ echo render_flash();
             <h1><?php _e('landing.hero_title_1'); ?><br><span class="gradient-text"><?php _e('landing.hero_title_2'); ?></span></h1>
             <p class="hero-subtitle"><?php _e('landing.hero_subtitle'); ?></p>
             <div class="hero-actions">
-                <a href="<?= base_url('events.php') ?>" class="btn btn-primary btn-lg">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    <?php _e('landing.join_event'); ?>
+                <a href="<?= base_url('login.php') ?>" class="btn btn-primary btn-lg">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                    <?php _e('nav.login'); ?>
                 </a>
-                <a href="<?= base_url('organizer/create-event.php') ?>" class="btn btn-hero-outline btn-lg">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    <?php _e('landing.host_event'); ?>
+                <a href="<?= base_url('signup.php') ?>" class="btn btn-hero-outline btn-lg">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                    <?php _e('nav.signup'); ?>
                 </a>
             </div>
             <div class="hero-features">

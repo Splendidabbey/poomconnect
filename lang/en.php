@@ -140,7 +140,7 @@ return [
         'welcome_back' => 'Welcome back!',
         'logged_out' => 'You have been logged out.',
         'welcome_title' => 'Welcome Back',
-        'sign_in_subtitle' => 'Sign in to join events, match, and host your own nights',
+        'sign_in_subtitle' => 'Sign in with your member account.',
         'organizer' => 'Organizer',
         'admin_role' => 'Admin',
         'email' => 'Email',
@@ -452,7 +452,7 @@ return [
     'signup' => [
         'title' => 'Create Account',
         'subtitle' => 'One membership. Join events, match with people, and host your own nights.',
-        'member_note' => 'You can be a participant, creator, and organizer on the same account.',
+        'member_note' => 'One member account. Join nights, match with people, and host when you are ready.',
         'participant' => 'Participant',
         'organizer' => 'Organizer',
         'organization_name' => 'Organization name',

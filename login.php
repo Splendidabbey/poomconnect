@@ -10,7 +10,6 @@ if (is_logged_in()) {
 
 $pageTitle = __('auth.welcome_title');
 $errors = [];
-$wantAdmin = ($_GET['role'] ?? $_POST['role'] ?? '') === 'admin';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify_or_redirect();
@@ -23,15 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($email === '' || $password === '') {
         $errors[] = __('auth.email_password_required');
     } elseif (login_user($email, $password)) {
-        $userRole = current_user_role();
-
-        if ($wantAdmin && !in_array($userRole, ['admin', 'super_admin'], true)) {
-            logout_user();
-            $errors[] = __('auth.invalid_admin_credentials');
-        } else {
-            set_flash('success', __('auth.welcome_back'));
-            redirect(member_home_url());
-        }
+        set_flash('success', __('auth.welcome_back'));
+        redirect(member_home_url());
     } else {
         rate_limit_hit('login', client_ip());
 
@@ -64,18 +56,15 @@ echo render_flash();
 
         <form method="post" data-loading>
             <?= csrf_field() ?>
-            <?php if ($wantAdmin): ?>
-                <input type="hidden" name="role" value="admin">
-            <?php endif; ?>
 
             <div class="form-group">
                 <label for="email"><?php _e('auth.email'); ?></label>
-                <input type="email" id="email" name="email" class="input" required value="<?= e($_POST['email'] ?? '') ?>">
+                <input type="email" id="email" name="email" class="input" required value="<?= e($_POST['email'] ?? '') ?>" autocomplete="username">
             </div>
 
             <div class="form-group">
                 <label for="password"><?php _e('auth.password'); ?></label>
-                <input type="password" id="password" name="password" class="input" required>
+                <input type="password" id="password" name="password" class="input" required autocomplete="current-password">
             </div>
 
             <button type="submit" class="btn btn-primary btn-block btn-lg"><?php _e('auth.sign_in'); ?></button>
@@ -84,11 +73,6 @@ echo render_flash();
         <p class="form-help auth-switch">
             <?php _e('signup.no_account'); ?> <a href="<?= base_url('signup.php') ?>"><?php _e('signup.create_account'); ?></a>
         </p>
-        <?php if (!$wantAdmin): ?>
-            <p class="form-help" style="text-align:center;margin-top:1rem;">
-                <a href="<?= base_url('login.php?role=admin') ?>"><?php _e('auth.admin_role'); ?></a>
-            </p>
-        <?php endif; ?>
     </div>
 </section>
 

@@ -22,7 +22,7 @@ if (rate_limit_exceeded('mobile_login', client_ip(), 20, 300)) {
     mobile_json_response(['success' => false, 'message' => 'Too many attempts. Try again later.'], 429);
 }
 
-if (!login_participant($email, $password) && !login_user($email, $password, true)) {
+if (!login_user($email, $password)) {
     rate_limit_hit('mobile_login', client_ip());
     mobile_json_response(['success' => false, 'message' => 'Invalid email or password'], 401);
 }

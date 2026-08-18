@@ -125,7 +125,7 @@ return [
         'welcome_back' => 'おかえりなさい!',
         'logged_out' => 'ログアウトしました。',
         'welcome_title' => 'おかえりなさい',
-        'sign_in_subtitle' => 'ログインしてイベントを管理しましょう',
+        'sign_in_subtitle' => 'メンバーアカウントでログイン',
         'organizer' => '主催者',
         'admin_role' => '管理者',
         'email' => 'メールアドレス',
@@ -424,7 +424,7 @@ return [
     ],
     'signup' => [
         'title' => 'アカウントを作成',
-        'subtitle' => '参加者または主催者としてPoom Connectに参加しましょう。',
+        'subtitle' => '1つのメンバーアカウントで参加、マッチ、主催まで。',
         'participant' => '参加者',
         'organizer' => '主催者',
         'organization_name' => '団体名',

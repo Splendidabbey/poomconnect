@@ -125,7 +125,7 @@ return [
         'welcome_back' => 'Maligayang pagbabalik!',
         'logged_out' => 'Na-log out ka na.',
         'welcome_title' => 'Maligayang Pagbabalik',
-        'sign_in_subtitle' => 'Mag-sign in para i-manage ang mga event mo',
+        'sign_in_subtitle' => 'Mag-sign in gamit ang iyong member account.',
         'organizer' => 'Organisador',
         'admin_role' => 'Tagapangasiwa',
         'email' => 'Email Add',
@@ -424,7 +424,7 @@ return [
     ],
     'signup' => [
         'title' => 'Gumawa ng Account',
-        'subtitle' => 'Sumali sa Poom Connect bilang participant o organizer.',
+        'subtitle' => 'Isang member account. Sumali, mag-match, at mag-host kapag handa ka na.',
         'participant' => 'Kalahok',
         'organizer' => 'Organisador',
         'organization_name' => 'Pangalan ng organisasyon',

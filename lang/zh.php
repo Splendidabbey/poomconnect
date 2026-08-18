@@ -125,7 +125,7 @@ return [
         'welcome_back' => '欢迎回来!',
         'logged_out' => '您已成功退出登录。',
         'welcome_title' => '欢迎回来',
-        'sign_in_subtitle' => '登录以管理您的活动',
+        'sign_in_subtitle' => '使用会员账号登录',
         'organizer' => '主办方',
         'admin_role' => '管理员',
         'email' => '电子邮箱',
@@ -425,7 +425,7 @@ return [
     ],
     'signup' => [
         'title' => '创建账户',
-        'subtitle' => '以参与者或主办方身份加入Poom Connect。',
+        'subtitle' => '一个会员账号即可参加活动、配对，并在准备好时主办。',
         'participant' => '参与者',
         'organizer' => '主办方',
         'organization_name' => '机构名称',
