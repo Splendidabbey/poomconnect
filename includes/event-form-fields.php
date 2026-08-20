@@ -6,8 +6,9 @@ declare(strict_types=1);
 $event = $event ?? null;
 $values = $event ?? $_POST;
 $eventCategories = get_categories('event');
-$gallery = $event ? get_event_images((int) $event['id']) : [];
-$isEdit = (bool) $event;
+$eventId = isset($event['id']) ? (int) $event['id'] : 0;
+$gallery = $eventId > 0 ? get_event_images($eventId) : [];
+$isEdit = $eventId > 0;
 ?>
 
 <div class="form-section">
